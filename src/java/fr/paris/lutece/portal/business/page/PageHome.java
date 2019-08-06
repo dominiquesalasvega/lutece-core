@@ -191,7 +191,6 @@ public final class PageHome
     {
         return _dao.selectAllPages( );
     }
-
     /**
      * Returns the list of page
      *
@@ -283,5 +282,15 @@ public final class PageHome
     public static void updateAuthorizationNode( int nIdPage, Integer nIdAuthorizationNode )
     {
         _dao.updateAutorisationNode( nIdPage, nIdAuthorizationNode );
+    }
+
+    /**
+     * Give the Number Of Pages
+     *
+     * @return nbPages
+     *                      The number of pages in the Table
+     */
+    public static int getNumberOfPages(){
+        return _dao.numberOfPages();
     }
 }

@@ -200,4 +200,12 @@ public interface IPageDAO
      * @return an id list
      */
     List<Integer> selectPageForChangeAutorisationNode( int nIdParentPage );
+
+    /**
+     * Give the Number Of Pages
+     *
+     * @return nbPages
+     *                      The number of pages in the Table
+     */
+    int numberOfPages();
 }

@@ -1,39 +1,241 @@
 <@row>
-	<@columns>
-		<@box color='danger'>
-			<@boxHeader title='#i18n{portal.search.manage_indexer.labelIndexersList}' boxTools=true>
-				<@tform method='get' name='doIndexing' action='jsp/admin/search/DoIndexing.jsp' class='pull-right'>
-					<input type="hidden" name="token" value="${token}">
-					<@button type='submit' buttonIcon='repeat' title='#i18n{portal.search.manage_indexer.buttonDoIndex}' name='total' size='' />
-					<@button type='submit' buttonIcon='refresh' title='#i18n{portal.search.manage_indexer.buttonDoIncrementalIndex}' name='incremental' size='' />
-				</@tform>
-			</@boxHeader>
-		<@boxBody>
-			<@table>
-					<tr>
-						<th>#i18n{portal.search.manage_indexer.columnIndexerName}</th>
-						<th>#i18n{portal.search.manage_indexer.columnIndexerVersion}</th>
-						<th>#i18n{portal.search.manage_indexer.columnIndexerDescription}</th>
-					</tr>
-					<#list indexers_list as indexer>
-						<tr>
-							<td>
-								<#if indexer.enable>
-									<@tag color='success' title='${indexer.name} #i18n{portal.search.manage_indexer.IndexerEnable}'>
-										<@icon style='check' />
-									</@tag>
-								<#else>
-									<@tag color='important' title='${indexer.name} #i18n{portal.search.manage_indexer.IndexerDisable}'>
-										<@icon style='times' />
-									</@tag>
-								</#if>&nbsp;${indexer.name}
-							</td>
-							<td>${indexer.version}</td>
-							<td>${indexer.description}</td>
-						</tr>
-					</#list>
-				</@table>
-			</@boxBody>
-		</@box>
-	</@columns>
+    <@columns>
+        <@box color='danger'>
+            <@boxHeader title='#i18n{portal.search.manage_indexer.labelIndexersList}' boxTools=true>
+                <@tform method='get' name='doIndexing' action='jsp/admin/search/DoIndexing.jsp' class='pull-right'>
+                    <input type="hidden" id="indexingToken"name="token" value="${token}">
+                    <@button class="indexation_action" type='submit' buttonIcon='repeat' title='#i18n{portal.search.manage_indexer.buttonDoIndex}' name='indexation_mode' size='' value="full" />
+                    <@button class="indexation_action" type='submit' buttonIcon='refresh' title='#i18n{portal.search.manage_indexer.buttonDoIncrementalbyBulkIndex}' name='indexation_mode' size='' value="incremental_by_bulk" />
+                </@tform>
+            </@boxHeader>
+            <@boxBody>
+                <div class="progress hide" id="progressBar">
+                    <div id = "prog-bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%"></div>
+                </div>
+                <i id="loader" class="fa fa-spinner fa-pulse fa-3x fa-fw hide" style="font-size:36px;color:#007bff;"></i>
+                <div class="alert alert-success hide" id="alert_load" role="alert">
+                    <@icon style='check' class="text-success" /> Indexing Done !
+                </div>
+                <@table>
+                    <tr>
+                        <th>#i18n{portal.search.manage_indexer.columnIndexerName}</th>
+                        <th>#i18n{portal.search.manage_indexer.columnIndexerVersion}</th>
+                        <th>#i18n{portal.search.manage_indexer.columnIndexerDescription}</th>
+                        <th>#i18n{portal.search.manage_indexer.columnIndexerPathIndex}</th>
+                        <th id="button" class='hide'>button</th>
+                    </tr>
+                    <#list indexers_list as indexer>
+                        <tr class="indexer" indexer="${indexer.name}">
+                            <td>
+                                <#if indexer.enable>
+                                    <@tag color='success' title='${indexer.name} #i18n{portal.search.manage_indexer.IndexerEnable}'>
+                                        <@icon style='check' />
+                                    </@tag>
+                                    <#else>
+                                        <@tag color='important' title='${indexer.name} #i18n{portal.search.manage_indexer.IndexerDisable}'>
+                                            <@icon style='times' />
+                                        </@tag>
+                                </#if>&nbsp;${indexer.name}
+                            </td>
+                            <td>${indexer.version}</td>
+                            <td>${indexer.description}</td>
+                            <td>${indexer.pathIndex!''}</td>
+                            <td id ="button_${indexer.name}" class='hide'>    
+                                <@button class="btn1" buttonIcon='plus' title='Logs'/>
+
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan=4 id ="logsHeader_${indexer.name}" class="log hide">
+                                <div id ="logHeader_${indexer.name}" class="log"></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan=4 id ="logs_${indexer.name}" class="log hide">
+
+                                <div id ="log_${indexer.name}" class="log" style="color: red;"></div>
+                            </td>
+                        </tr>
+                    </#list>
+                    <div id ="General_logs" class="log hide"></div>
+                </@table>
+            </@boxBody>
+        </@box>
+    </@columns>
 </@row>
+
+<script>
+    $("#allLogs").hide();
+    var index = 0;
+    var DoIndexingDone = false;
+
+    $(".btn1").click(function(e) {
+        e.preventDefault();
+        var tr = this.closest('tr');
+        var IndexerName = tr.getAttribute('indexer')
+        document.getElementById("logsHeader_"+IndexerName).classList.toggle('hide');
+        document.getElementById("logs_"+IndexerName).classList.toggle('hide');
+    });
+
+    $('.indexation_action').click(function(e) {
+        e.preventDefault();
+        $('.indexation_action').attr("disabled", true);
+        $("#progressBar").removeClass('hide');
+        $(".alert").addClass('hide');
+        $("#button").removeClass('hide');
+        $("#loader").removeClass('hide');
+        $.ajax({
+            url: "jsp/admin/search/DoIndexing.jsp?indexation_mode=" + $(this).val()+'&'+index,
+            method: "POST",
+            dataType: "html",
+            data:{
+            token: $("#indexingToken").val(),
+            },
+            success: function() {
+                getIndexingLogs()
+                $("#loader").addClass('hide');
+                $(".alert").removeClass('hide');
+                $("#progressBar").addClass('hide');
+                
+            },
+            error: function(resultat, statut, erreur) {
+                $("#progressBar").addClass('hide');
+                $(".alert").removeClass('hide');
+
+            },
+
+            complete: function(resultat, statut) {
+                DoIndexingDone = true;
+                $('.indexation_action').attr("disabled", false);
+            }
+        });
+        getIndexingLogs()
+    });
+    
+
+    function getIndexingLogs() {
+        index++;
+        $.ajax({
+            url: "jsp/admin/search/GetIndexingLogs.jsp?"+ index,// " + random number"
+            method: "GET",
+            dataType: "json",
+            success: function(data) {
+                var start = new Date().getTime();
+                for (var i = 0; i < 1e7; i++) {
+                    if ((new Date().getTime() - start) > 1000){
+                    break;
+                    }
+                }
+                if (DoIndexingDone == false)
+                {
+                    logsIndexers(data);
+                    getIndexingLogs();
+                }
+            },
+
+            error: function(resultat, statut, erreur) {
+
+            },
+
+            complete: function(resultat, statut) {
+
+            }
+        });
+
+    }
+
+
+    function logsIndexers(data) {
+        const indexers = document.querySelectorAll('.indexer');
+        var i = 1;
+        indexers.forEach(function(el) {
+            const indexer = el.getAttribute('indexer')
+            if (data[i].indexerName)
+            {
+                $("#button_"+ indexer).removeClass('hide');
+                var j,x = "",z="";
+                for (j in data[i].listIndexerLogs) 
+                {
+                    x += "<strong>uid</strong> : &nbsp;" + data[i].listIndexerLogs[j].uid + "  &nbsp;&nbsp;";
+                    x += "<strong>Error</strong> : &nbsp;" +data[i].listIndexerLogs[j].action + "&nbsp;&nbsp; "+data[i].listIndexerLogs[j].errorDocLog+" <br> ";  
+                }
+                z += "<strong>Indexation Mode</strong> : &nbsp;" + data[i].indexationMode + "&nbsp;&nbsp; <br>";
+                z += "<strong>Number of Items to Process</strong> : &nbsp;" + data[i].numberOfItemsToProcess + "&nbsp;&nbsp; <br>";
+                z += "<strong>Number of Items Processed</strong> : &nbsp;" + data[i].numberOfItemsProcessed + "&nbsp;&nbsp; <br>";
+                z += "<strong>Duration of Treatment</strong> : &nbsp;" + data[i].treatmentDurationMs + " &nbsp; ms &nbsp; <br>";
+                if (data[i].numberOfItemsFailed != 0)
+                {
+                    z += "<strong>Number Of Errors</strong> : &nbsp;" + data[i].numberOfItemsFailed + "&nbsp;&nbsp; <br> ";
+                }
+                i++;
+                $("#logHeader_" + indexer).html(z);
+                $("#log_" + indexer).html(x);
+            }
+        });
+        $("#General_logs").removeClass('hide');
+        var y = "";
+        const percent = (data[0].numberOfItemsProcessed / data[0].numberOfItemsToProcess ) * 100;
+        y += "<strong> Duration of Treatment </strong> :" + data[0].treatmentDurationMs + " ms <br>";
+        y += "<strong> Number Of Items To Process </strong> :" + data[0].numberOfItemsToProcess + " <br>";
+        y += "<strong> Number Of Items Processed </strong> :" + data[0].numberOfItemsProcessed + " <br>";
+        y += "<strong> Percent of Avancement </strong> :" + percent + " %<br>";
+        if (data[0].numberOfItemsFailed != 0)
+        {
+            y += "<strong>Number Of Errors</strong> : &nbsp;" + data[i].numberOfItemsFailed + "&nbsp;&nbsp; <br> ";
+        }
+        $("#prog-bar").width(percent+"%");
+        $("#prog-bar").attr("aria-valuenow", percent);
+        $("#prog-bar").text( Math.floor(percent) + "%");
+        $("#General_logs").html(y);
+    }
+    
+ 
+
+    
+
+
+/*
+var DoIndexingDone = false;
+getIndexingLogs
+remove all processing / interval
+var start = new Date().getTime();
+  for (var i = 0; i < 1e7; i++) {
+    if ((new Date().getTime() - start) > 3000){
+      break;
+    }
+    if (DoIndexingDone == false)
+    {
+        logsIndexers(data);
+        getIndexingLogs();
+    }
+*/
+</script>
+
+<style>
+    .hide {
+        display: none;
+    }
+    
+    .log {
+        padding:10px;
+        max-height: 150px;
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+    
+    .log span {
+        display: block;
+    }
+
+    #General_logs{
+        padding:10px;
+        max-height: 150px;
+        overflow-x: hidden;
+        overflow-y: auto;
+        border-width:1px;
+        border-color:black;
+    }
+
+
+
+</style>

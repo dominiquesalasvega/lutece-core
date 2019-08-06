@@ -42,77 +42,131 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * Interface of pluggable indexer. An Indexer can add documents to the main Lucene index.
+ * Interface of pluggable indexer. An Indexer can add documents to the main
+ * Lucene index.
  */
-public interface SearchIndexer
-{
+public interface SearchIndexer {
     /**
-     * Index all lucene documents from the plugin, replace List&lt;Document&gt; getDocuments( ) method
+     * Index all lucene documents from the plugin, replace List&lt;Document&gt;
+     * getDocuments( ) method
      * 
-     * @throws IOException
-     *             If an IO error occured
-     * @throws InterruptedException
-     *             If a thread error occured
-     * @throws SiteMessageException
-     *             occurs when a site message need to be displayed
+     * @throws IOException          If an IO error occured
+     * @throws InterruptedException If a thread error occured
+     * @throws SiteMessageException occurs when a site message need to be displayed
      */
-    void indexDocuments( ) throws IOException, InterruptedException, SiteMessageException;
+    void indexDocuments() throws IOException, InterruptedException, SiteMessageException;
 
     /**
      * Returns a List of lucene documents to add to the index
      * 
-     * @param strIdDocument
-     *            document id
+     * @param strIdDocument document id
      * @return A List of lucene documents to add to the index
-     * @throws IOException
-     *             If an IO error occured
-     * @throws InterruptedException
-     *             If a thread error occured
-     * @throws SiteMessageException
-     *             occurs when a site message need to be displayed
+     * @throws IOException          If an IO error occured
+     * @throws InterruptedException If a thread error occured
+     * @throws SiteMessageException occurs when a site message need to be displayed
      */
-    List<Document> getDocuments( String strIdDocument ) throws IOException, InterruptedException, SiteMessageException;
+    List<Document> getDocuments(String strIdDocument) throws IOException, InterruptedException, SiteMessageException;
 
     /**
      * Returns the indexer service name
      * 
      * @return the indexer service name
      */
-    String getName( );
+    String getName();
 
     /**
      * Returns the indexer service version
      * 
      * @return the indexer service version
      */
-    String getVersion( );
+    String getVersion();
 
     /**
      * Returns the indexer service description
      * 
      * @return the indexer service description
      */
-    String getDescription( );
+    String getDescription();
 
     /**
      * Tells whether the service is enable or not
      * 
      * @return true if enable, otherwise false
      */
-    boolean isEnable( );
+    boolean isEnable();
 
     /**
-     * Returns all the {@link fr.paris.lutece.portal.service.search.SearchItem#FIELD_TYPE types} of document the service may index. (See
+     * Returns all the
+     * {@link fr.paris.lutece.portal.service.search.SearchItem#FIELD_TYPE types} of
+     * document the service may index. (See
      * {@link fr.paris.lutece.portal.service.search.SearchItem#getType()})
      * 
      * @return The list
      */
-    List<String> getListType( );
+    List<String> getListType();
 
     /**
      * Returns the search app dedicated to the documents indexed by the service
      * 
      * @return the url of the app page
      */
-    String getSpecificSearchAppUrl( );
+    String getSpecificSearchAppUrl();
+
+    /**
+     * Return the path of indexed Files
+     * 
+     * @return the Path of indexed Files
+     */
+    default String getPathIndex() {
+        return null;
+    }
+
+    /**
+     * Return the total number of Elements to index
+     *
+     * @return a int of number of Elements
+     */
+    default int getNumberOfElementsToProcess( )
+    {
+        return -1;
+    }
+
+    /**
+     * Return the number of Elements indexed
+     *
+     * @return a int of number of Elements
+     */
+    default int getNumberOfElementsProcessed( )
+    {
+        return -1;
+    }
+
+    /**
+     * Return the number of Elements Failed
+     *
+     * @return a int of number of Elements Failed
+     */
+    default int getNumberOfElementsFailed( )
+    {
+        return -1;
+    }
+
+    
+    /**
+     * Set the Initialization of Indexer
+     *
+     */
+    default void setInitializationIndexer()
+    {
+        
+    }
+
+    /**
+     * initialize Indexation of Indexer
+     */
+    default void initIndexer()
+    {
+
+    }
+
 }

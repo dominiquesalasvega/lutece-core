@@ -33,8 +33,12 @@
  */
 package fr.paris.lutece.portal.web.search;
 
+import fr.paris.lutece.portal.business.search.IndexationMode;
 import fr.paris.lutece.portal.service.admin.AccessDeniedException;
 import fr.paris.lutece.portal.service.search.IndexationService;
+import fr.paris.lutece.portal.business.search.AllIndexationInformations;
+import fr.paris.lutece.portal.business.search.GeneralIndexLog;
+import fr.paris.lutece.portal.business.search.IndexationInformation;
 import fr.paris.lutece.portal.service.search.SearchIndexer;
 import fr.paris.lutece.portal.service.security.SecurityTokenService;
 import fr.paris.lutece.portal.service.template.AppTemplateService;
@@ -43,14 +47,19 @@ import fr.paris.lutece.util.html.HtmlTemplate;
 
 import java.util.Collection;
 import java.util.HashMap;
-
+import java.util.Map;
+import org.codehaus.jackson.JsonGenerationException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
 import javax.servlet.http.HttpServletRequest;
 
+import java.io.IOException;
+
 /**
- * This class provides the user interface to manage the launching of the indexing of the site pages
+ * This class provides the user interface to manage the launching of the
+ * indexing of the site pages
  */
-public class SearchIndexationJspBean extends AdminFeaturesPageJspBean
-{
+public class SearchIndexationJspBean extends AdminFeaturesPageJspBean {
     // //////////////////////////////////////////////////////////////////////////
     // Constantes
     /**
@@ -62,57 +71,162 @@ public class SearchIndexationJspBean extends AdminFeaturesPageJspBean
     private static final String TEMPLATE_INDEXER_LOGS = "admin/search/search_indexation_logs.html";
     private static final String MARK_LOGS = "logs";
     private static final String MARK_INDEXERS_LIST = "indexers_list";
+    private static final String INDEXATION_MODE = "indexation_mode";
+    ObjectMapper mapper = new ObjectMapper();
+
 
     /**
      * Displays the indexing parameters
      *
-     * @param request
-     *            the http request
+     * @param request the http request
      * @return the html code which displays the parameters page
      */
-    public String getIndexingProperties( HttpServletRequest request )
-    {
-        HashMap<String, Object> model = new HashMap<String, Object>( );
-        Collection<SearchIndexer> listIndexers = IndexationService.getIndexers( );
-        model.put( MARK_INDEXERS_LIST, listIndexers );
-        model.put( SecurityTokenService.MARK_TOKEN, SecurityTokenService.getInstance( ).getToken( request, TEMPLATE_MANAGE_INDEXER ) );
+    public String getIndexingProperties(HttpServletRequest request) {
+        HashMap<String, Object> model = new HashMap<String, Object>();
+        Collection<SearchIndexer> listIndexers = IndexationService.getIndexers();
+        model.put(MARK_INDEXERS_LIST, listIndexers);
+        model.put(SecurityTokenService.MARK_TOKEN,
+                SecurityTokenService.getInstance().getToken(request, TEMPLATE_MANAGE_INDEXER));
 
-        HtmlTemplate template = AppTemplateService.getTemplate( TEMPLATE_MANAGE_INDEXER, getLocale( ), model );
+        HtmlTemplate template = AppTemplateService.getTemplate(TEMPLATE_MANAGE_INDEXER, getLocale(), model);
 
-        return getAdminPage( template.getHtml( ) );
+        return getAdminPage(template.getHtml());
     }
 
     /**
      * Calls the indexing process
      *
-     * @param request
-     *            the http request
+     * @param request the http request
      * @return the result of the indexing process
-     * @throws AccessDeniedException
-     *             if the security token is invalid
+     * @throws AccessDeniedException if the security token is invalid
      */
-    public String doIndexing( HttpServletRequest request ) throws AccessDeniedException
-    {
-        if ( !SecurityTokenService.getInstance( ).validate( request, TEMPLATE_MANAGE_INDEXER ) )
+    public String doIndexing(HttpServletRequest request) throws AccessDeniedException {
+
+        
+        if (!SecurityTokenService.getInstance().validate(request, TEMPLATE_MANAGE_INDEXER)) 
         {
-            throw new AccessDeniedException( "Invalid security token" );
+            throw new AccessDeniedException("Invalid security token");
         }
-        HashMap<String, Object> model = new HashMap<String, Object>( );
         String strLogs;
-
-        if ( request.getParameter( "incremental" ) != null )
-        {
-            strLogs = IndexationService.processIndexing( false );
+        HashMap<String, Object> model = new HashMap<String, Object>();
+        String strModeIndex = request.getParameter(INDEXATION_MODE);
+        IndexationMode modeIndexation = IndexationMode.getIndexationMode(strModeIndex);
+        if (modeIndexation != null) {
+            strLogs = IndexationService.processIndexing(modeIndexation);
+        } else {
+            strLogs = "Unknown Mode set by users\nIndexation FAILED\n";
         }
-        else
-        {
-            strLogs = IndexationService.processIndexing( true );
-        }
+        model.put(MARK_LOGS, strLogs);
 
-        model.put( MARK_LOGS, strLogs );
+        HtmlTemplate template = AppTemplateService.getTemplate(TEMPLATE_INDEXER_LOGS, null, model);
 
-        HtmlTemplate template = AppTemplateService.getTemplate( TEMPLATE_INDEXER_LOGS, null, model );
-
-        return getAdminPage( template.getHtml( ) );
+        return getAdminPage(template.getHtml());
     }
+
+    
+
+    public String getIndexingLogs(HttpServletRequest request) {
+
+        AllIndexationInformations allIndexationInformations = IndexationService.getAllIndexationInformations();
+        return getJsonString(allIndexationInformations,true).toString();
+
+    }
+
+
+
+    public StringBuffer getJsonString(AllIndexationInformations allIndexationInformations , Boolean allLogs)
+    {
+        Map<String,IndexationInformation> mapCurrentIndexersInformation = allIndexationInformations.getMapCurrentIndexersInformation();
+        StringBuffer sbIndexerLogsRecover = new StringBuffer();
+        String jsonString = new String();
+        String jsonStringHead = new String();
+        sbIndexerLogsRecover.append("[");
+        GeneralIndexLog generalIndexLog = allIndexationInformations.getGeneralIndexLog();
+        if (generalIndexLog == null){
+            jsonStringHead = "{\"General logs\" : \"Not Enable\"}";
+        }
+        else{
+            try {
+                jsonStringHead = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(generalIndexLog);
+            }
+            catch (JsonGenerationException e) {
+                e.printStackTrace();
+            } catch (JsonMappingException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            sbIndexerLogsRecover.append(jsonStringHead+",");
+        }
+        if (mapCurrentIndexersInformation != null)
+        {
+
+            Collection<SearchIndexer> listIndexers = IndexationService.getIndexers();
+            int itemsCount = listIndexers.size();
+            int i = 0;
+            for (SearchIndexer indexer : listIndexers)
+            {
+                IndexationInformation indexationInfo = mapCurrentIndexersInformation.get(indexer.getName());
+                if (indexationInfo == null){
+                    jsonString = "{\"Indexer\" : \"Not Enable\"}";
+                }
+                else{
+                    try {
+                        if (allLogs == false)
+                        {
+                            indexationInfo.setListIndexerLogs(null);
+                        }
+                        jsonString = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(indexationInfo);
+                    }
+                catch (JsonGenerationException e) {
+                    e.printStackTrace();
+                } catch (JsonMappingException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                }
+                
+                
+                sbIndexerLogsRecover.append(jsonString);
+                i++;
+                if (i != itemsCount){
+                    sbIndexerLogsRecover.append(",");
+                }
+
+                
+            }
+        }
+        else{
+            
+            sbIndexerLogsRecover.append("{null}");
+            
+        }
+        sbIndexerLogsRecover.append("]");
+        return sbIndexerLogsRecover;
+    }
+
 }
+
+
+
+
+
+        /*
+        AllIndexationInformations allIndexationInformations = IndexationService.getAllIndexationInformations();
+        StringBuffer sbf = new StringBuffer(getJsonString(allIndexationInformations,true));
+        try {
+		BufferedWriter bwr = new BufferedWriter(new FileWriter(new File("/home/mairiedeparis/Bureau/IndexerLogsFile.txt")));
+		
+		//write contents of StringBuffer to a file
+		bwr.write(sbf.toString());
+		
+		//flush the stream
+		bwr.flush();
+		
+		//close the stream
+		bwr.close();
+
+        } catch (IOException e) {
+          e.printStackTrace();
+        }*/

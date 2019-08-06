@@ -30,6 +30,15 @@
         <search-indexer>
             <search-indexer-class>fr.paris.lutece.portal.service.search.PageIndexer</search-indexer-class>
         </search-indexer>
+        <search-indexer>
+            <search-indexer-class>fr.paris.lutece.portal.service.search.MyPageIndexer</search-indexer-class>
+        </search-indexer>
+        <search-indexer>
+            <search-indexer-class>fr.paris.lutece.portal.service.search.ProjetIndexer</search-indexer-class>
+        </search-indexer>
+        <search-indexer>
+            <search-indexer-class>fr.paris.lutece.portal.service.search.XPageIndexer</search-indexer-class>
+        </search-indexer>
     </search-indexers>
     
     <!-- Applications -->

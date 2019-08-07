@@ -379,6 +379,7 @@ public class ProjetIndexer implements SearchIndexer {
             numberOfItemProcessed = 0;
             numberOfItemFailed = 0;
             _initialization = true;
+            docfail = 0;
         }
     }
 

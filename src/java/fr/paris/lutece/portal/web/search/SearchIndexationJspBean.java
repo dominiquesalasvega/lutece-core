@@ -72,7 +72,7 @@ public class SearchIndexationJspBean extends AdminFeaturesPageJspBean {
     private static final String MARK_LOGS = "logs";
     private static final String MARK_INDEXERS_LIST = "indexers_list";
     private static final String INDEXATION_MODE = "indexation_mode";
-    ObjectMapper mapper = new ObjectMapper();
+    public static ObjectMapper mapper = new ObjectMapper();
 
 
     /**
@@ -103,18 +103,27 @@ public class SearchIndexationJspBean extends AdminFeaturesPageJspBean {
     public String doIndexing(HttpServletRequest request) throws AccessDeniedException {
 
         
-        if (!SecurityTokenService.getInstance().validate(request, TEMPLATE_MANAGE_INDEXER)) 
+        /*if (!SecurityTokenService.getInstance().validate(request, TEMPLATE_MANAGE_INDEXER)) 
         {
             throw new AccessDeniedException("Invalid security token");
-        }
+        }*/
         String strLogs;
         HashMap<String, Object> model = new HashMap<String, Object>();
-        String strModeIndex = request.getParameter(INDEXATION_MODE);
-        IndexationMode modeIndexation = IndexationMode.getIndexationMode(strModeIndex);
-        if (modeIndexation != null) {
-            strLogs = IndexationService.processIndexing(modeIndexation);
-        } else {
-            strLogs = "Unknown Mode set by users\nIndexation FAILED\n";
+        if (IndexationService.getIsIndexing() == false)
+        {
+            IndexationService.setIsIndexing(true);
+            String[] modeIndex = request.getParameter(INDEXATION_MODE).split(",");
+            String strModeIndex = modeIndex[0];
+            String strIndexerTreated = modeIndex[1];
+            IndexationMode modeIndexation = IndexationMode.getIndexationMode(strModeIndex);
+            if (modeIndexation != null) {
+                strLogs = IndexationService.processIndexing(modeIndexation,strIndexerTreated);
+            } else {
+                strLogs = "Unknown Mode set by users\nIndexation FAILED\n";
+            }
+        }
+        else{
+            strLogs = "Error another Indexation is running";
         }
         model.put(MARK_LOGS, strLogs);
 
@@ -128,13 +137,13 @@ public class SearchIndexationJspBean extends AdminFeaturesPageJspBean {
     public String getIndexingLogs(HttpServletRequest request) {
 
         AllIndexationInformations allIndexationInformations = IndexationService.getAllIndexationInformations();
-        return getJsonString(allIndexationInformations,true).toString();
+        return getJsonString(allIndexationInformations).toString();
 
     }
 
 
 
-    public StringBuffer getJsonString(AllIndexationInformations allIndexationInformations , Boolean allLogs)
+    public StringBuffer getJsonString(AllIndexationInformations allIndexationInformations )
     {
         Map<String,IndexationInformation> mapCurrentIndexersInformation = allIndexationInformations.getMapCurrentIndexersInformation();
         StringBuffer sbIndexerLogsRecover = new StringBuffer();
@@ -172,9 +181,9 @@ public class SearchIndexationJspBean extends AdminFeaturesPageJspBean {
                 }
                 else{
                     try {
-                        if (allLogs == false)
+                        if (indexationInfo.getNumberOfElementFromList()>10000)
                         {
-                            indexationInfo.setListIndexerLogs(null);
+                            indexationInfo.getListIndexerLogs().subList(10000, indexationInfo.getNumberOfElementFromList()).clear();
                         }
                         jsonString = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(indexationInfo);
                     }
@@ -211,22 +220,3 @@ public class SearchIndexationJspBean extends AdminFeaturesPageJspBean {
 
 
 
-
-        /*
-        AllIndexationInformations allIndexationInformations = IndexationService.getAllIndexationInformations();
-        StringBuffer sbf = new StringBuffer(getJsonString(allIndexationInformations,true));
-        try {
-		BufferedWriter bwr = new BufferedWriter(new FileWriter(new File("/home/mairiedeparis/Bureau/IndexerLogsFile.txt")));
-		
-		//write contents of StringBuffer to a file
-		bwr.write(sbf.toString());
-		
-		//flush the stream
-		bwr.flush();
-		
-		//close the stream
-		bwr.close();
-
-        } catch (IOException e) {
-          e.printStackTrace();
-        }*/

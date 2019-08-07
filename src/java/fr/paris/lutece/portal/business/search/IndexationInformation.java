@@ -45,7 +45,6 @@ import java.util.List;
         private String          indexerDescription;
         private String          indexationMode;
         private int             numberOfItemsFailed;
-        private String          errorLogs;
         private long            treatmentDurationMs;
         private int             numberOfItemsToProcess;
         private int             numberOfItemsProcessed;
@@ -61,7 +60,21 @@ import java.util.List;
             this.indexationMode = null;
             this.indexerDescription = null;
             this.numberOfItemsFailed = -1;
-            this.errorLogs = "None";
+            this.treatmentDurationMs = 0;
+            this.numberOfItemsToProcess = 0;
+            this.numberOfItemsProcessed = 0;
+            this.listIndexerLogs = null;
+        }
+
+        /**
+         * reset Params 
+         */
+        public void resetIndexationInformation()
+        {
+            this.indexerName = null;
+            this.indexationMode = null;
+            this.indexerDescription = null;
+            this.numberOfItemsFailed = -1;
             this.treatmentDurationMs = 0;
             this.numberOfItemsToProcess = 0;
             this.numberOfItemsProcessed = 0;
@@ -71,13 +84,12 @@ import java.util.List;
         /**
          * Constructor 
          */
-        public IndexationInformation(String name,String indexerDescription,String  indexationMode,int numberOfItemsFailed,String errorLogs ,long  treatmentDurationMs , int numberOfItemsToProcess,int numberOfItemsProcessed,List<IndexationLogs> listIndexerLogs)
+        public IndexationInformation(String name,String indexerDescription,String  indexationMode,int numberOfItemsFailed,long  treatmentDurationMs , int numberOfItemsToProcess,int numberOfItemsProcessed,List<IndexationLogs> listIndexerLogs)
         {
             this.indexerName = name;
             this.indexationMode = indexationMode;
             this.indexerDescription = indexerDescription;
             this.numberOfItemsFailed = numberOfItemsFailed;
-            this.errorLogs = errorLogs;
             this.treatmentDurationMs = treatmentDurationMs;
             this.numberOfItemsToProcess = numberOfItemsToProcess;
             this.numberOfItemsProcessed = numberOfItemsProcessed;
@@ -105,10 +117,6 @@ import java.util.List;
         {
             return numberOfItemsFailed;
         }
-        public String getErrorLogs()
-        {
-            return errorLogs;
-        }
         public long getTreatmentDurationMs()
         {
             return treatmentDurationMs;
@@ -124,6 +132,10 @@ import java.util.List;
         public List<IndexationLogs> getListIndexerLogs()
         {
             return listIndexerLogs;
+        }
+        public int getNumberOfElementFromList()
+        {
+            return listIndexerLogs.size();
         }
 
         /**
@@ -144,10 +156,6 @@ import java.util.List;
         public void setNumberOfItemsFailed(int numberOfItemsFailed)
         {
             this.numberOfItemsFailed = numberOfItemsFailed;
-        }
-        public void setErrorLogs(String errorLogs)
-        {
-            this.errorLogs = errorLogs;
         }
         public void setTreatmentDurationMs(long treatmentDurationMs)
         {
@@ -176,10 +184,9 @@ import java.util.List;
         }
 
 
-        public void setAllParam(int numberOfItemsFailed, String errorLogs ,long  treatmentDurationMs , int numberOfItemsToProcess,int numberOfItemsProcessed)
+        public void setAllParam(int numberOfItemsFailed,long  treatmentDurationMs , int numberOfItemsToProcess,int numberOfItemsProcessed)
         {
             this.numberOfItemsFailed = numberOfItemsFailed;
-            this.errorLogs = errorLogs;
             this.treatmentDurationMs = treatmentDurationMs;
             this.numberOfItemsToProcess = numberOfItemsToProcess;
             this.numberOfItemsProcessed = numberOfItemsProcessed;

@@ -64,20 +64,5 @@ public enum IndexationMode {
         }
     }
 
-    public static String getStrIndexationMode(IndexationMode indexationMode)
-    {
-        switch (indexationMode) {
-            case FULL:
-                return "full";
-            case INCREMENTAL_BY_BULK:
-                return "incremental_by_bulk";
-            case INCREMENTAL_DIRECTLY:
-                return "incremental_directly";
-            default:
-                AppLogService.error("Unknown Indexation Mode : Provided " + indexationMode + " is not valid ");
-                return null;
-    
-            }
-    }
 
 }

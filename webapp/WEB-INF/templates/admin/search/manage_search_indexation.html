@@ -4,8 +4,8 @@
             <@boxHeader title='#i18n{portal.search.manage_indexer.labelIndexersList}' boxTools=true>
                 <@tform method='get' name='doIndexing' action='jsp/admin/search/DoIndexing.jsp' class='pull-right'>
                     <input type="hidden" id="indexingToken"name="token" value="${token}">
-                    <@button class="indexation_action" type='submit' buttonIcon='repeat' title='#i18n{portal.search.manage_indexer.buttonDoIndex}' name='indexation_mode' size='' value="full" />
-                    <@button class="indexation_action" type='submit' buttonIcon='refresh' title='#i18n{portal.search.manage_indexer.buttonDoIncrementalbyBulkIndex}' name='indexation_mode' size='' value="incremental_by_bulk" />
+                    <@button class="indexation_action" type='submit' buttonIcon='repeat' title='#i18n{portal.search.manage_indexer.buttonDoIndex}' name='indexation_mode' size='' value="full,All" />
+                    <@button class="indexation_action" type='submit' buttonIcon='refresh' title='#i18n{portal.search.manage_indexer.buttonDoIncrementalbyBulkIndex}' name='indexation_mode' size='' value="incremental_by_bulk,All" />
                 </@tform>
             </@boxHeader>
             <@boxBody>
@@ -40,9 +40,19 @@
                             <td>${indexer.version}</td>
                             <td>${indexer.description}</td>
                             <td>${indexer.pathIndex!''}</td>
-                            <td id ="button_${indexer.name}" class='hide'>    
-                                <@button class="btn1" buttonIcon='plus' title='Logs'/>
-
+                            <td style="align-items: center;">  
+                                <#if indexer.enable> 
+                                <div> 
+                                <@tform method='get' name='doIndexing' action='jsp/admin/search/DoIndexing.jsp' class='pull-right'>
+                                    <input type="hidden" id="indexingToken"name="token" value="${token}">
+                                    <@button class="indexation_action" type='submit' buttonIcon='repeat' title='#i18n{portal.search.manage_indexer.buttonDoIndex}' name='indexation_mode' size='' value="full,${indexer.name}" />
+                                    <@button class="indexation_action" type='submit' buttonIcon='refresh' title='#i18n{portal.search.manage_indexer.buttonDoIncrementalbyBulkIndex}' name='indexation_mode' size='' value="incremental_by_bulk,${indexer.name}" />
+                                </@tform>
+                                </div>
+                                </#if>
+                                <div id ="button_${indexer.name}" class='hide'>
+                                    <@button class="btn1" buttonIcon='plus' title='Logs' />
+                                </div>
                             </td>
                         </tr>
                         <tr>
@@ -66,8 +76,7 @@
 
 <script>
     $("#allLogs").hide();
-    var index = 0;
-    var DoIndexingDone = false;
+    var isIndexing = false;
 
     $(".btn1").click(function(e) {
         e.preventDefault();
@@ -84,39 +93,38 @@
         $(".alert").addClass('hide');
         $("#button").removeClass('hide');
         $("#loader").removeClass('hide');
+        isIndexing = true
         $.ajax({
-            url: "jsp/admin/search/DoIndexing.jsp?indexation_mode=" + $(this).val()+'&'+index,
+            url: "jsp/admin/search/DoIndexing.jsp?indexation_mode=" + $(this).val(),
             method: "POST",
             dataType: "html",
             data:{
             token: $("#indexingToken").val(),
             },
             success: function() {
-                getIndexingLogs()
-                $("#loader").addClass('hide');
-                $(".alert").removeClass('hide');
-                $("#progressBar").addClass('hide');
+                
                 
             },
             error: function(resultat, statut, erreur) {
-                $("#progressBar").addClass('hide');
-                $(".alert").removeClass('hide');
 
             },
 
             complete: function(resultat, statut) {
-                DoIndexingDone = true;
+                getIndexingLogs();
                 $('.indexation_action').attr("disabled", false);
+                $("#loader").addClass('hide');
+                $(".alert").removeClass('hide');
+                $("#progressBar").addClass('hide');
+                isIndexing = false;
             }
         });
-        getIndexingLogs()
+        getIndexingLogs();
     });
     
 
     function getIndexingLogs() {
-        index++;
         $.ajax({
-            url: "jsp/admin/search/GetIndexingLogs.jsp?"+ index,// " + random number"
+            url: "jsp/admin/search/GetIndexingLogs.jsp",// " + random number"
             method: "GET",
             dataType: "json",
             success: function(data) {
@@ -126,7 +134,7 @@
                     break;
                     }
                 }
-                if (DoIndexingDone == false)
+                if (isIndexing == true)
                 {
                     logsIndexers(data);
                     getIndexingLogs();
@@ -182,6 +190,10 @@
         if (data[0].numberOfItemsFailed != 0)
         {
             y += "<strong>Number Of Errors</strong> : &nbsp;" + data[i].numberOfItemsFailed + "&nbsp;&nbsp; <br> ";
+        }
+        if (data[0].isIndexing == false)
+        {
+            isIndexing = false;
         }
         $("#prog-bar").width(percent+"%");
         $("#prog-bar").attr("aria-valuenow", percent);

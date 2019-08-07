@@ -63,6 +63,17 @@ package fr.paris.lutece.portal.business.search;
         }
 
         /**
+         * Reset all Param
+         */
+        public void resetIndexationLogs()
+        {
+
+            this.action = null;
+            this.errorDocLog = null;
+            this.uid = null;
+        }
+
+        /**
          * Personal Constructor 
          */
         public IndexationLogs(String action,String uid)

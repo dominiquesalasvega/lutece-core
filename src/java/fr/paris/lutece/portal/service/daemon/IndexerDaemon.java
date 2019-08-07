@@ -52,6 +52,10 @@ public final class IndexerDaemon extends Daemon
     {
         // Launching of the incremental indexing.
         IndexationMode modeIndexation = IndexationMode.FULL;
-        setLastRunLogs( IndexationService.processIndexing( modeIndexation ) );
+        if(!IndexationService.getIsIndexing())
+        {
+            IndexationService.setIsIndexing(true);
+            setLastRunLogs( IndexationService.processIndexing( modeIndexation , "All") );
+        }
     }
 }

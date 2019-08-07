@@ -44,6 +44,7 @@ package fr.paris.lutece.portal.business.search;
         private long            treatmentDurationMs;
         private int             numberOfItemsToProcess;
         private int             numberOfItemsProcessed;
+        private boolean         isIndexing;
 
 
         /**
@@ -55,17 +56,31 @@ package fr.paris.lutece.portal.business.search;
             this.treatmentDurationMs = 0;
             this.numberOfItemsProcessed = 0;
             this.numberOfItemsToProcess = 0;
+            this.isIndexing = true;
         }
 
         /**
          * Constructor 
          */
-        public GeneralIndexLog(int numberOfItemsFailed,long  treatmentDurationMs , int  numberOfItemsToProcess, int numberOfItemsProcessed)
+        public GeneralIndexLog(int numberOfItemsFailed,long  treatmentDurationMs , int  numberOfItemsToProcess, int numberOfItemsProcessed, boolean isIndexing)
         {
             this.numberOfItemsFailed = numberOfItemsFailed;
             this.treatmentDurationMs = treatmentDurationMs;
             this.numberOfItemsToProcess = numberOfItemsToProcess;
             this.numberOfItemsProcessed = numberOfItemsProcessed;
+            this.isIndexing = isIndexing;
+        }
+
+        /**
+         * reset Params 
+         */
+        public void resetGeneralIndexLog()
+        {
+            this.numberOfItemsFailed = -1;
+            this.treatmentDurationMs = 0;
+            this.numberOfItemsProcessed = 0;
+            this.numberOfItemsToProcess = 0;
+            this.isIndexing = true;
         }
         
         
@@ -88,6 +103,10 @@ package fr.paris.lutece.portal.business.search;
         {
             return numberOfItemsProcessed;
         }
+        public boolean getIsIndexing()
+        {
+            return isIndexing;
+        }
 
         /**
          * setter
@@ -107,6 +126,10 @@ package fr.paris.lutece.portal.business.search;
         public void setNumberOfItemsProcessed(int numberOfItemsProcessed)
         {
             this.numberOfItemsProcessed = numberOfItemsProcessed;
+        }
+        public void setIsIndexing(boolean isIndexing)
+        {
+            this.isIndexing = isIndexing;
         }
 
 

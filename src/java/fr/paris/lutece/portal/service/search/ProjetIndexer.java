@@ -62,17 +62,18 @@ public class ProjetIndexer implements SearchIndexer {
     private static final String INDEXER_DESCRIPTION = "Projet Indexer Service";
     private static final String INDEXER_VERSION = "3.0.1";
     private static String INDEXER_PATH_INDEX;
-    private static final int NUMBER_OF_DOC_GENERATED = 14520; 
+    private static final int NUMBER_OF_DOC_GENERATED = 35000; 
     private static final int SIZE_OF_TITLE = 5;
     private static final int SIZE_OF_DESCRIPTION = 5;
 
+    //Param needed for new Indexationlogs
     private int numberOfItemProcessed = -1;
     private int numberOfItemFailed = -1;
     private boolean _initialization = false; 
     private int _lastIdIndexed = -1;
     List<Projet> _listProjet = new ArrayList<>();
-    private int docfail = 0;
 
+    
     /**
      * {@inheritDoc}
      */
@@ -101,17 +102,8 @@ public class ProjetIndexer implements SearchIndexer {
             }
 
             if (doc != null) {
-                //Thread.sleep(100);
-                if (docfail <= 2354)
-                {
-                    IndexationService.error(this.getName(), String.valueOf(projet.getId()));
-                    numberOfItemFailed++;
-                    docfail++ ;
-                }
-                else {
                 IndexationService.write(doc);
                 numberOfItemProcessed++;
-                }
             }
             
         }
@@ -379,7 +371,6 @@ public class ProjetIndexer implements SearchIndexer {
             numberOfItemProcessed = 0;
             numberOfItemFailed = 0;
             _initialization = true;
-            docfail = 0;
         }
     }
 

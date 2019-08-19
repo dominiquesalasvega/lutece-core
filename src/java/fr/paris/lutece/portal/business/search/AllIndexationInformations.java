@@ -36,7 +36,7 @@ package fr.paris.lutece.portal.business.search;
 import java.util.Map;
 
 /**
- * Class Indexation information the class provide manage method to get
+ * Class All Indexation information the class provide manage method to get
  * Indexers's Information in order to have Logs
  */
     public class AllIndexationInformations{
@@ -55,7 +55,9 @@ import java.util.Map;
         }
 
         /**
-         * Constructor 
+         * Construtor
+         * @param generalIndexLog
+         * @param mapCurrentIndexersInformation
          */
         public AllIndexationInformations(GeneralIndexLog generalIndexLog, Map<String,IndexationInformation>   mapCurrentIndexersInformation)
         {   
@@ -64,26 +66,39 @@ import java.util.Map;
         }
         
         
-        /**
-         * getter
-         */
         
+        /**
+         * Get General Information of Indexation logs
+         * @return GeneralIndexLog
+         */
         public GeneralIndexLog getGeneralIndexLog()
         {
             return generalIndexLog;
         }
+
+        /**
+         * Get Current map Information of Indexation logs
+         * @return Map<String,IndexationInformation>
+         */
         public Map<String,IndexationInformation>   getMapCurrentIndexersInformation()
         {
             return mapCurrentIndexersInformation;
         }
 
+
         /**
-         * setter
+         * Set General Information of Indexation logs
+         * @param generalIndexLog
          */
         public void setGeneralIndexLog(GeneralIndexLog generalIndexLog)
         {
             this.generalIndexLog = generalIndexLog;
         }
+
+        /**
+         * Set Current map Information of Indexation logs
+         * @param mapCurrentIndexersInformation
+         */
         public void setMapCurrentIndexersInformation(Map<String,IndexationInformation> mapCurrentIndexersInformation)
         {
             this.mapCurrentIndexersInformation = mapCurrentIndexersInformation;

@@ -35,7 +35,7 @@ package fr.paris.lutece.portal.business.search;
 
 
 /**
- * Class Indexation information the class provide manage method to get
+ * Class General Indexation information the class provide manage method to get
  * Indexers's Information in order to have Logs
  */
     public class GeneralIndexLog{
@@ -52,7 +52,7 @@ package fr.paris.lutece.portal.business.search;
          */
         public GeneralIndexLog()
         {
-            this.numberOfItemsFailed = -1;
+            this.numberOfItemsFailed = 0;
             this.treatmentDurationMs = 0;
             this.numberOfItemsProcessed = 0;
             this.numberOfItemsToProcess = 0;
@@ -60,7 +60,12 @@ package fr.paris.lutece.portal.business.search;
         }
 
         /**
-         * Constructor 
+         * Constructor
+         * @param numberOfItemsFailed
+         * @param treatmentDurationMs
+         * @param numberOfItemsToProcess
+         * @param numberOfItemsProcessed
+         * @param isIndexing
          */
         public GeneralIndexLog(int numberOfItemsFailed,long  treatmentDurationMs , int  numberOfItemsToProcess, int numberOfItemsProcessed, boolean isIndexing)
         {
@@ -71,12 +76,13 @@ package fr.paris.lutece.portal.business.search;
             this.isIndexing = isIndexing;
         }
 
+        
         /**
-         * reset Params 
+         * reset All Params from General Indexation information
          */
         public void resetGeneralIndexLog()
         {
-            this.numberOfItemsFailed = -1;
+            this.numberOfItemsFailed = 0;
             this.treatmentDurationMs = 0;
             this.numberOfItemsProcessed = 0;
             this.numberOfItemsToProcess = 0;
@@ -85,48 +91,93 @@ package fr.paris.lutece.portal.business.search;
         
         
         /**
-         * getter
+         * Get the Number Of Items Failed
+         * @return int
          */
         public int getNumberOfItemsFailed()
         {
             return numberOfItemsFailed;
         }
+
+        /**
+         * Get the Treatment Duration in Ms
+         * @return long
+         */
         public long getTreatmentDurationMs()
         {
             return treatmentDurationMs;
         }
+
+        /**
+         * Get the Number Of Items To Process
+         * @return int
+         */
         public int getNumberOfItemsToProcess()
         {
             return numberOfItemsToProcess;
         }
+
+        /**
+         * Get the Number Of Items Processed
+         * @return int
+         */
         public int getNumberOfItemsProcessed()
         {
             return numberOfItemsProcessed;
         }
+
+        /**
+         * Get boolean true -> Indexation is running
+         *                  -> Indexation is not running
+         * @return boolean
+         */
         public boolean getIsIndexing()
         {
             return isIndexing;
         }
 
+
         /**
-         * setter
+         * set the Number Of Items Failed
+         * @param numberOfItemsFailed
          */
         public void setNumberOfItemsFailed(int numberOfItemsFailed)
         {
             this.numberOfItemsFailed = numberOfItemsFailed;
         }
+
+        /**
+         * Set the Treatment Duration in Ms
+         * @param treatmentDurationMs
+         */
         public void setTreatmentDurationMs(long treatmentDurationMs)
         {
             this.treatmentDurationMs = treatmentDurationMs;
         }
+
+        /**
+         * Set the Number Of Items To Process
+         * @param numberOfItemsToProcess
+         */
         public void setNumberOfItemsToProcess(int numberOfItemsToProcess)
         {
             this.numberOfItemsToProcess = numberOfItemsToProcess;
         }
+
+        /**
+         * Set the Number Of Items Processed
+         * @param numberOfItemsProcessed
+         */
         public void setNumberOfItemsProcessed(int numberOfItemsProcessed)
         {
             this.numberOfItemsProcessed = numberOfItemsProcessed;
         }
+
+        /**
+         * Set boolean true -> Indexation is running
+         *                  -> Indexation is not running
+         * @param isIndexing
+         */
         public void setIsIndexing(boolean isIndexing)
         {
             this.isIndexing = isIndexing;

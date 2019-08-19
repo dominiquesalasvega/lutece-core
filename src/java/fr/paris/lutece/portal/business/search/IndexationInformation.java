@@ -41,14 +41,16 @@ import java.util.List;
  */
     public class IndexationInformation{
 
-        private String          indexerName;
-        private String          indexerDescription;
-        private String          indexationMode;
-        private int             numberOfItemsFailed;
-        private long            treatmentDurationMs;
-        private int             numberOfItemsToProcess;
-        private int             numberOfItemsProcessed;
-        private List<IndexationLogs>  listIndexerLogs;
+        private String   indexerName;
+        private String   indexerDescription;
+        private String   indexationMode;
+        private int      numberOfItemsFailed;
+        private long     treatmentDurationMs;
+        private int      numberOfItemsToProcess;
+        private int      numberOfItemsProcessed;
+        private List<IndexationItemLog>  listIndexationItemsLog;
+        private boolean  updatedIndexation;
+
 
 
         /**
@@ -59,32 +61,44 @@ import java.util.List;
             this.indexerName = null;
             this.indexationMode = null;
             this.indexerDescription = null;
-            this.numberOfItemsFailed = -1;
+            this.numberOfItemsFailed = 0;
             this.treatmentDurationMs = 0;
             this.numberOfItemsToProcess = 0;
             this.numberOfItemsProcessed = 0;
-            this.listIndexerLogs = null;
+            this.listIndexationItemsLog = null;
+            this.updatedIndexation = true;
         }
 
+        
         /**
-         * reset Params 
+         * reset All Params from Indexation information
          */
         public void resetIndexationInformation()
         {
             this.indexerName = null;
             this.indexationMode = null;
             this.indexerDescription = null;
-            this.numberOfItemsFailed = -1;
+            this.numberOfItemsFailed = 0;
             this.treatmentDurationMs = 0;
             this.numberOfItemsToProcess = 0;
             this.numberOfItemsProcessed = 0;
-            this.listIndexerLogs = null;
+            this.listIndexationItemsLog = null;
+            this.updatedIndexation = true;
         }
 
         /**
-         * Constructor 
+         * Constructor
+         * @param name
+         * @param indexerDescription
+         * @param indexationMode
+         * @param numberOfItemsFailed
+         * @param treatmentDurationMs
+         * @param numberOfItemsToProcess
+         * @param numberOfItemsProcessed
+         * @param listIndexationItemsLog
+         * @param updatedIndexation
          */
-        public IndexationInformation(String name,String indexerDescription,String  indexationMode,int numberOfItemsFailed,long  treatmentDurationMs , int numberOfItemsToProcess,int numberOfItemsProcessed,List<IndexationLogs> listIndexerLogs)
+        public IndexationInformation(String name,String indexerDescription,String  indexationMode,int numberOfItemsFailed,long  treatmentDurationMs , int numberOfItemsToProcess,int numberOfItemsProcessed,List<IndexationItemLog> listIndexationItemsLog,boolean updatedIndexation)
         {
             this.indexerName = name;
             this.indexationMode = indexationMode;
@@ -93,97 +107,212 @@ import java.util.List;
             this.treatmentDurationMs = treatmentDurationMs;
             this.numberOfItemsToProcess = numberOfItemsToProcess;
             this.numberOfItemsProcessed = numberOfItemsProcessed;
-            this.listIndexerLogs = listIndexerLogs;
+            this.listIndexationItemsLog = listIndexationItemsLog;
+            this.updatedIndexation = updatedIndexation;
         }
         
         
         /**
-         * getter
+         * Get the Indexer Name
+         * @return String
          */
-        
         public String getIndexerName()
         {
             return indexerName;
         }
+
+        /**
+         * Get the Indexer Description
+         * @return String
+         */
         public String getIndexerDescription()
         {
             return indexerDescription;
         }
+
+        /**
+         * Get the Indexation Mode
+         * @return String
+         */
         public String getIndexationMode()
         {
             return indexationMode;
         }
+
+        /**
+         * Get the Number Of Items Failed
+         * @return int
+         */
         public int getNumberOfItemsFailed()
         {
             return numberOfItemsFailed;
         }
+
+        /**
+         * Get the Treatment Duration in MS
+         * @return long
+         */
         public long getTreatmentDurationMs()
         {
             return treatmentDurationMs;
         }
+
+        /**
+         * Get the Number Of Items To Process
+         * @return int
+         */
         public int getNumberOfItemsToProcess()
         {
             return numberOfItemsToProcess;
         }
+
+        /**
+         * Get the Number Of Items Processed
+         * @return int
+         */
         public int getNumberOfItemsProcessed()
         {
             return numberOfItemsProcessed;
         }
-        public List<IndexationLogs> getListIndexerLogs()
+
+        /**
+         * Get the List Of Indexation Items Logs
+         * @return List<IndexationItemLog> 
+         */
+        public List<IndexationItemLog> getListIndexationItemsLog()
         {
-            return listIndexerLogs;
-        }
-        public int getNumberOfElementFromList()
-        {
-            return listIndexerLogs.size();
+            return listIndexationItemsLog;
         }
 
         /**
-         * setter
+         * Get the Number Of Elements from a List
+         * @return int
+         */
+        public int getNumberOfElementFromList()
+        {
+            return listIndexationItemsLog.size();
+        }
+        
+        /**
+         * Get boolean true -> indexer is up to date
+         *             false -> indexer is not up to date
+         * @return boolean
+         */
+        public boolean getUpdatedIndexation()
+        {
+            return updatedIndexation;
+        }
+
+
+
+        /**
+         * Set the Indexer Name
+         * @param indexerName
          */
         public void setIndexerName(String indexerName)
         {
             this.indexerName = indexerName;
         }
+
+        /**
+         * Set the Indexer Description
+         * @param indexerDescription
+         */
         public void setIndexerDescription(String indexerDescription)
         {
             this.indexerDescription = indexerDescription;
         }
+
+        /**
+         * Set the Indexation Mode
+         * @param indexationMode
+         */
         public void setIndexationMode(String indexationMode)
         {
             this.indexationMode = indexationMode;
         }
+
+        /**
+         * Set the Number Of Items Failed
+         * @param numberOfItemsFailed
+         */
         public void setNumberOfItemsFailed(int numberOfItemsFailed)
         {
             this.numberOfItemsFailed = numberOfItemsFailed;
         }
+
+        /**
+         * Set the Treatment Duration in Ms
+         * @param treatmentDurationMs
+         */
         public void setTreatmentDurationMs(long treatmentDurationMs)
         {
             this.treatmentDurationMs = treatmentDurationMs;
         }
+
+        /**
+         * Set Number Of Items to Process
+         * @param numberOfItemsToProcess
+         */
         public void setNumberOfItemsToProcess(int numberOfItemsToProcess)
         {
             this.numberOfItemsToProcess = numberOfItemsToProcess;
         }
+
+        /**
+         * Set the Number Of Items Processed 
+         * @param numberOfItemsProcessed
+         */
         public void setNumberOfItemsProcessed(int numberOfItemsProcessed)
         {
             this.numberOfItemsProcessed = numberOfItemsProcessed;
         }
-        public void setListIndexerLogs(List<IndexationLogs> listIndexerLogs)
+
+        /**
+         * Set the List of Indexation Items Logs
+         * @param listIndexationItemsLog
+         */
+        public void setListIndexationItemsLog(List<IndexationItemLog> listIndexationItemsLog)
         {
-            this.listIndexerLogs = listIndexerLogs;
+            this.listIndexationItemsLog = listIndexationItemsLog;
         }
 
-        public void addToListIndexerLogs(IndexationLogs indexLogs)
+        /**
+         * Set a boolean true -> indexer is up to date
+         *               false -> indexer is not up to date
+         * @param updatedIndexation
+         */
+        public void setUpdatedIndexation(boolean updatedIndexation)
         {
-            this.listIndexerLogs.add(indexLogs);
+            this.updatedIndexation = updatedIndexation;
         }
-        public void addListIndexerLogs(List<IndexationLogs> listIndexLogs)
+        
+        
+        /**
+         * Add to the List of Indexation Items Logs
+         * @param indexationItemLog
+         */
+        public void addToListIndexationItemsLog(IndexationItemLog indexationItemLog)
         {
-            this.listIndexerLogs.addAll(listIndexLogs);
+            this.listIndexationItemsLog.add(indexationItemLog);
         }
 
+        /**
+         * Add a List of Indexation Items Logs
+         * @param listIndexationItemsLog
+         */
+        public void addListIndexationItemsLog(List<IndexationItemLog> listIndexationItemsLog)
+        {
+            this.listIndexationItemsLog.addAll(listIndexationItemsLog);
+        }
 
+        /**
+         * Set Treatment Parameter of Indexation Information
+         * @param numberOfItemsFailed
+         * @param treatmentDurationMs
+         * @param numberOfItemsToProcess
+         * @param numberOfItemsProcessed
+         */
         public void setAllParam(int numberOfItemsFailed,long  treatmentDurationMs , int numberOfItemsToProcess,int numberOfItemsProcessed)
         {
             this.numberOfItemsFailed = numberOfItemsFailed;

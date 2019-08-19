@@ -34,87 +34,105 @@
 package fr.paris.lutece.portal.business.search;
     
 /**
-     * Class Indexation information 
-     * the class provide manage method to get Indexers's Information in order to have Logs
+     * Class Indexation Item Log 
+     * the class provide manage method to get Indexers's Information in order to have Log
      */
-    public class IndexationLogs{
+    public class IndexationItemLog{
 
-        private String  action;
-        private String  errorDocLog;
-        private String  uid;
+        private String  actionItem;
+        private String  errorItem;
+        private String  uidItem;
 
         /**
-         * Constructor 
+         * Constructor
+         * @param actionItem
+         * @param errorItem
+         * @param uidItem
          */
-        public IndexationLogs(String action,String  errorDocLog, String uid)
+        public IndexationItemLog(String actionItem,String  errorItem, String uidItem)
         {
 
-            this.action = action;
-            this.errorDocLog = errorDocLog;
-            this.uid = uid;
+            this.actionItem = actionItem;
+            this.errorItem = errorItem;
+            this.uidItem = uidItem;
         }
 
-        public IndexationLogs()
+        /**
+         * Default Constructor
+         */
+        public IndexationItemLog()
         {
 
-            this.action = null;
-            this.errorDocLog = null;
-            this.uid = null;
+            this.actionItem = null;
+            this.errorItem = null;
+            this.uidItem = null;
         }
 
         /**
          * Reset all Param
          */
-        public void resetIndexationLogs()
+        public void resetIndexationItemLog()
         {
 
-            this.action = null;
-            this.errorDocLog = null;
-            this.uid = null;
+            this.actionItem = null;
+            this.errorItem = null;
+            this.uidItem = null;
+        }
+
+        /** 
+         * Get the Action Item
+         * @return String
+         */
+        public String getActionItem()
+        {
+            return actionItem;
         }
 
         /**
-         * Personal Constructor 
+         * Get Error Item
+         * @return String
          */
-        public IndexationLogs(String action,String uid)
+        public String  getErrorItem()
         {
-            this.action = action;
-            this.errorDocLog = null;
-            this.uid = uid;
+            return errorItem;
         }
-        
+
         /**
-         * getter
+         * Get the Uid Item
+         * @return
          */
-        public String getAction()
+        public String getUidItem()
         {
-            return action;
-        }
-        public String  getErrorDocLog()
-        {
-            return errorDocLog;
-        }
-        public String getUid()
-        {
-            return uid;
+            return uidItem;
         }
 
 
 
         /**
-         * setter
+         * Set Action Item
+         * @param actionItem
          */
-        public void getAction(String action)
+        public void setActionItem(String actionItem)
         {
-            this.action = action;
+            this.actionItem = actionItem;
         }
-        public void getErrorDocLog(String  errorDocLog)
+
+        /**
+         * Set Error Item
+         * @param errorItem
+         */
+        public void setErrorItem(String  errorItem)
         {
-            this.errorDocLog = errorDocLog;
+            this.errorItem = errorItem;
         }
-        public void getUid(String uid)
+
+        /**
+         * Set Uid Item
+         * @param uidItem
+         */
+        public void setUidItem(String uidItem)
         {
-            this.uid = uid;
+            this.uidItem = uidItem;
         }
 
 

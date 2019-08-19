@@ -37,8 +37,6 @@ import fr.paris.lutece.portal.business.search.IndexationMode;
 import fr.paris.lutece.portal.service.admin.AccessDeniedException;
 import fr.paris.lutece.portal.service.search.IndexationService;
 import fr.paris.lutece.portal.business.search.AllIndexationInformations;
-import fr.paris.lutece.portal.business.search.GeneralIndexLog;
-import fr.paris.lutece.portal.business.search.IndexationInformation;
 import fr.paris.lutece.portal.service.search.SearchIndexer;
 import fr.paris.lutece.portal.service.security.SecurityTokenService;
 import fr.paris.lutece.portal.service.template.AppTemplateService;
@@ -46,14 +44,10 @@ import fr.paris.lutece.portal.web.admin.AdminFeaturesPageJspBean;
 import fr.paris.lutece.util.html.HtmlTemplate;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
-import java.util.Map;
-import org.codehaus.jackson.JsonGenerationException;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
 import javax.servlet.http.HttpServletRequest;
 
-import java.io.IOException;
 
 /**
  * This class provides the user interface to manage the launching of the
@@ -72,7 +66,6 @@ public class SearchIndexationJspBean extends AdminFeaturesPageJspBean {
     private static final String MARK_LOGS = "logs";
     private static final String MARK_INDEXERS_LIST = "indexers_list";
     private static final String INDEXATION_MODE = "indexation_mode";
-    public static ObjectMapper mapper = new ObjectMapper();
 
 
     /**
@@ -123,7 +116,7 @@ public class SearchIndexationJspBean extends AdminFeaturesPageJspBean {
             }
         }
         else{
-            strLogs = "Error another Indexation is running";
+            strLogs = ""+IndexationService.getIsIndexing()+"";
         }
         model.put(MARK_LOGS, strLogs);
 
@@ -133,88 +126,17 @@ public class SearchIndexationJspBean extends AdminFeaturesPageJspBean {
     }
 
     
-
+    /**
+     * Get Indexation logs
+     * @param request
+     * @return String
+     */
     public String getIndexingLogs(HttpServletRequest request) {
 
         AllIndexationInformations allIndexationInformations = IndexationService.getAllIndexationInformations();
-        return getJsonString(allIndexationInformations).toString();
+        return IndexationService.getJsonString(allIndexationInformations);
 
     }
-
-
-
-    public StringBuffer getJsonString(AllIndexationInformations allIndexationInformations )
-    {
-        Map<String,IndexationInformation> mapCurrentIndexersInformation = allIndexationInformations.getMapCurrentIndexersInformation();
-        StringBuffer sbIndexerLogsRecover = new StringBuffer();
-        String jsonString = new String();
-        String jsonStringHead = new String();
-        sbIndexerLogsRecover.append("[");
-        GeneralIndexLog generalIndexLog = allIndexationInformations.getGeneralIndexLog();
-        if (generalIndexLog == null){
-            jsonStringHead = "{\"General logs\" : \"Not Enable\"}";
-        }
-        else{
-            try {
-                jsonStringHead = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(generalIndexLog);
-            }
-            catch (JsonGenerationException e) {
-                e.printStackTrace();
-            } catch (JsonMappingException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            sbIndexerLogsRecover.append(jsonStringHead+",");
-        }
-        if (mapCurrentIndexersInformation != null)
-        {
-
-            Collection<SearchIndexer> listIndexers = IndexationService.getIndexers();
-            int itemsCount = listIndexers.size();
-            int i = 0;
-            for (SearchIndexer indexer : listIndexers)
-            {
-                IndexationInformation indexationInfo = mapCurrentIndexersInformation.get(indexer.getName());
-                if (indexationInfo == null){
-                    jsonString = "{\"Indexer\" : \"Not Enable\"}";
-                }
-                else{
-                    try {
-                        if (indexationInfo.getNumberOfElementFromList()>10000)
-                        {
-                            indexationInfo.getListIndexerLogs().subList(10000, indexationInfo.getNumberOfElementFromList()).clear();
-                        }
-                        jsonString = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(indexationInfo);
-                    }
-                catch (JsonGenerationException e) {
-                    e.printStackTrace();
-                } catch (JsonMappingException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                }
-                
-                
-                sbIndexerLogsRecover.append(jsonString);
-                i++;
-                if (i != itemsCount){
-                    sbIndexerLogsRecover.append(",");
-                }
-
-                
-            }
-        }
-        else{
-            
-            sbIndexerLogsRecover.append("{null}");
-            
-        }
-        sbIndexerLogsRecover.append("]");
-        return sbIndexerLogsRecover;
-    }
-
 }
 
 

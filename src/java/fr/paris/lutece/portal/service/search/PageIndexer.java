@@ -81,6 +81,7 @@ public class PageIndexer implements SearchIndexer
     protected static IPageService _pageService = (IPageService) SpringContextService.getBean( "pageService" );
     private static final String INDEXER_DESCRIPTION = "Indexer service for pages";
     private static final String INDEXER_VERSION = "1.0.0";
+    private static String INDEXER_PATH_INDEX;
 
     /**
      * {@inheritDoc}
@@ -105,7 +106,7 @@ public class PageIndexer implements SearchIndexer
             catch( Exception e )
             {
                 String strMessage = "Page ID : " + page.getId( );
-                IndexationService.error( this, e, strMessage );
+                IndexationService.error( this , e, strMessage );
             }
 
             if ( doc != null )
@@ -163,6 +164,15 @@ public class PageIndexer implements SearchIndexer
     public String getDescription( )
     {
         return INDEXER_DESCRIPTION;
+    }
+
+    /**
+    * {@inheritDoc}
+    */
+    @Override
+    public String getPathIndex() {
+        INDEXER_PATH_INDEX = IndexationService.getIndexPath();
+        return INDEXER_PATH_INDEX;
     }
 
     /**
@@ -316,5 +326,14 @@ public class PageIndexer implements SearchIndexer
     public String getSpecificSearchAppUrl( )
     {
         return AppPropertiesService.getProperty( PROPERTY_SEARCH_PAGE_URL );
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int getNumberOfElementsToProcess( )
+    {
+        return PageHome.getNumberOfPages( );
     }
 }

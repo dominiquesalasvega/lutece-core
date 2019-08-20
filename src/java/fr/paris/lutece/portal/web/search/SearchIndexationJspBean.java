@@ -33,8 +33,10 @@
  */
 package fr.paris.lutece.portal.web.search;
 
+import fr.paris.lutece.portal.business.search.IndexationMode;
 import fr.paris.lutece.portal.service.admin.AccessDeniedException;
 import fr.paris.lutece.portal.service.search.IndexationService;
+import fr.paris.lutece.portal.business.search.AllIndexationInformations;
 import fr.paris.lutece.portal.service.search.SearchIndexer;
 import fr.paris.lutece.portal.service.security.SecurityTokenService;
 import fr.paris.lutece.portal.service.template.AppTemplateService;
@@ -62,6 +64,7 @@ public class SearchIndexationJspBean extends AdminFeaturesPageJspBean
     private static final String TEMPLATE_INDEXER_LOGS = "admin/search/search_indexation_logs.html";
     private static final String MARK_LOGS = "logs";
     private static final String MARK_INDEXERS_LIST = "indexers_list";
+    private static final String INDEXATION_MODE = "indexation_mode";
 
     /**
      * Displays the indexing parameters
@@ -97,22 +100,40 @@ public class SearchIndexationJspBean extends AdminFeaturesPageJspBean
         {
             throw new AccessDeniedException( "Invalid security token" );
         }
-        HashMap<String, Object> model = new HashMap<String, Object>( );
         String strLogs;
-
-        if ( request.getParameter( "incremental" ) != null )
+        HashMap<String, Object> model = new HashMap<String, Object>();
+        if (IndexationService.getIsIndexing() == false)
         {
-            strLogs = IndexationService.processIndexing( false );
+            IndexationService.setIsIndexing(true);
+            String[] modeIndex = request.getParameter(INDEXATION_MODE).split(",");
+            String strModeIndex = modeIndex[0];
+            String strIndexerTreated = modeIndex[1];
+            IndexationMode modeIndexation = IndexationMode.getIndexationMode(strModeIndex);
+            if (modeIndexation != null) {
+                strLogs = IndexationService.processIndexing(modeIndexation,strIndexerTreated);
+            } else {
+                strLogs = "Unknown Mode set by users\nIndexation FAILED\n";
+            }
         }
-        else
-        {
-            strLogs = IndexationService.processIndexing( true );
+        else{
+            strLogs = "There is another indexation "+IndexationService.getIsIndexing()+" !";
         }
+        model.put(MARK_LOGS, strLogs);
 
-        model.put( MARK_LOGS, strLogs );
+        HtmlTemplate template = AppTemplateService.getTemplate(TEMPLATE_INDEXER_LOGS, null, model);
 
-        HtmlTemplate template = AppTemplateService.getTemplate( TEMPLATE_INDEXER_LOGS, null, model );
+        return getAdminPage(template.getHtml());
+    }
 
-        return getAdminPage( template.getHtml( ) );
+    /**
+     * Get Indexation logs
+     * @param request
+     * @return String
+     */
+    public String getIndexingLogs(HttpServletRequest request) {
+
+        AllIndexationInformations allIndexationInformations = IndexationService.getAllIndexationInformations();
+        return IndexationService.getJsonString(allIndexationInformations);
+
     }
 }

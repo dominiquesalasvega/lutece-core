@@ -35,6 +35,7 @@ package fr.paris.lutece.portal.service.daemon;
 
 import fr.paris.lutece.portal.service.search.IndexationService;
 import fr.paris.lutece.portal.service.util.AppPropertiesService;
+import fr.paris.lutece.portal.business.search.IndexationMode;
 
 /**
  * This class provides methods which allows Daemon to manage and process the treatment of the indexing.
@@ -50,6 +51,11 @@ public final class IndexerDaemon extends Daemon
     public void run( )
     {
         // Launching of the incremental indexing.
-        setLastRunLogs( IndexationService.processIndexing( TOTAL_INDEXING ) );
+        IndexationMode modeIndexation = IndexationMode.INCREMENTAL_BY_BULK;
+        if(!IndexationService.getIsIndexing())
+        {
+            IndexationService.setIsIndexing(true);
+            setLastRunLogs( IndexationService.processIndexing( modeIndexation , "All") );
+        }    
     }
 }

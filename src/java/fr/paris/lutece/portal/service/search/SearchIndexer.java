@@ -115,4 +115,60 @@ public interface SearchIndexer
      * @return the url of the app page
      */
     String getSpecificSearchAppUrl( );
+
+    /**
+     * Return the path of indexed Files
+     * 
+     * @return the Path of indexed Files
+     */
+    default String getPathIndex( ) 
+    {
+        return null;
+    }
+
+    /**
+     * Return the total number of Elements to index
+     *
+     * @return a int of number of Elements
+     */
+    default int getNumberOfElementsToProcess( )
+    {
+        return -1;
+    }
+
+    /**
+     * Return the number of Elements indexed
+     *
+     * @return a int of number of Elements
+     */
+    default int getNumberOfElementsProcessed( )
+    {
+        return -1;
+    }
+
+    /**
+     * Return the number of Elements Failed
+     *
+     * @return a int of number of Elements Failed
+     */
+    default int getNumberOfElementsFailed( )
+    {
+        return -1;
+    }
+
+    
+    /**
+     * Set the Initialization of Indexer
+     *
+     */
+    default void setInitializationIndexer( )
+    {
+    }
+
+    /**
+     * initialize Indexation of Indexer
+     */
+    default void initIndexer( )
+    {
+    }
 }

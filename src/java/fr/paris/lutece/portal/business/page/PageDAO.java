@@ -90,6 +90,7 @@ public final class PageDAO implements IPageDAO
             + " page_order, status, role , code_theme , node_status , mime_type, "
             + "  date_update, meta_keywords, meta_description,id_authorization_node, display_date_update, is_manual_date_update  FROM core_page "
             + " ORDER BY date_update DESC LIMIT 1";
+    private static final String SQL_QUERY_COUNT_PAGES = "SELECT COUNT(*) FROM core_page";
 
     // ImageResource queries
     private static final String SQL_QUERY_SELECT_RESOURCE_IMAGE = " SELECT image_content , mime_type FROM core_page " + " WHERE id_page = ? ";
@@ -821,5 +822,28 @@ public final class PageDAO implements IPageDAO
         daoUtil.free( );
 
         return listIdPage;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int numberOfPages(){
+        DAOUtil daoUtil = new DAOUtil( SQL_QUERY_COUNT_PAGES );
+        daoUtil.executeQuery( );
+
+        int nbPages;
+
+        if ( !daoUtil.next( ) )
+        {
+            // if the table is empty
+            nbPages = 0;
+        }
+
+        nbPages = daoUtil.getInt( 1 );
+
+        daoUtil.free( );
+
+        return nbPages;
     }
 }

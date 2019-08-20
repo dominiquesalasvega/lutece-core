@@ -284,4 +284,14 @@ public final class PageHome
     {
         _dao.updateAutorisationNode( nIdPage, nIdAuthorizationNode );
     }
+
+    /**
+     * Give the Number Of Pages
+     *
+     * @return nbPages
+     *                      The number of pages in the Table
+     */
+    public static int getNumberOfPages(){
+        return _dao.numberOfPages();
+    }
 }

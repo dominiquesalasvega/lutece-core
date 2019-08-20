@@ -291,8 +291,8 @@ public final class IndexationService
                 error( "Close dir",e,"" );
             }
             setIsIndexing( false );
+            _generalIndexLog.setIsIndexing( isIndexing );
         }
-        _generalIndexLog.setIsIndexing( isIndexing );
         return getJsonString( getAllIndexationInformations( ) );
     }
 

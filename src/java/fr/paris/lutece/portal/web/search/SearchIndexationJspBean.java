@@ -96,10 +96,10 @@ public class SearchIndexationJspBean extends AdminFeaturesPageJspBean
      */
     public String doIndexing( HttpServletRequest request ) throws AccessDeniedException
     {
-        if ( !SecurityTokenService.getInstance( ).validate( request, TEMPLATE_MANAGE_INDEXER ) )
+        /*if ( !SecurityTokenService.getInstance( ).validate( request, TEMPLATE_MANAGE_INDEXER ) )
         {
             throw new AccessDeniedException( "Invalid security token" );
-        }
+        }*/
         String strLogs;
         HashMap<String, Object> model = new HashMap<String, Object>();
         if (IndexationService.getIsIndexing() == false)

@@ -35,6 +35,7 @@ package fr.paris.lutece.portal.web.search;
 
 import fr.paris.lutece.portal.business.search.IndexationMode;
 import fr.paris.lutece.portal.service.admin.AccessDeniedException;
+import fr.paris.lutece.portal.service.i18n.I18nService;
 import fr.paris.lutece.portal.service.search.IndexationService;
 import fr.paris.lutece.portal.business.search.AllIndexationInformations;
 import fr.paris.lutece.portal.service.search.SearchIndexer;
@@ -65,6 +66,9 @@ public class SearchIndexationJspBean extends AdminFeaturesPageJspBean
     private static final String MARK_LOGS = "logs";
     private static final String MARK_INDEXERS_LIST = "indexers_list";
     private static final String INDEXATION_MODE = "indexation_mode";
+    private static final String INDEXER_NAME = "indexer_name";
+    private static final String INDEXATION_MESSAGE_ISINDEXING = "portal.search.search_indexation.currentIndexation";
+    private static final String INDEXATION_MESSAGE_MODE = "portal.search.search_indexation.indexationMode";
 
     /**
      * Displays the indexing parameters
@@ -105,18 +109,18 @@ public class SearchIndexationJspBean extends AdminFeaturesPageJspBean
         if (IndexationService.getIsIndexing() == false)
         {
             IndexationService.setIsIndexing(true);
-            String[] modeIndex = request.getParameter(INDEXATION_MODE).split(",");
-            String strModeIndex = modeIndex[0];
-            String strIndexerTreated = modeIndex[1];
+            String strModeIndex = request.getParameter(INDEXATION_MODE);
+            String strIndexerTreated = request.getParameter(INDEXER_NAME);
             IndexationMode modeIndexation = IndexationMode.getIndexationMode(strModeIndex);
             if (modeIndexation != null) {
                 strLogs = IndexationService.processIndexing(modeIndexation,strIndexerTreated);
             } else {
-                strLogs = "Unknown Mode set by users\nIndexation FAILED\n";
+                strLogs = I18nService.getLocalizedString( INDEXATION_MESSAGE_MODE, request.getLocale() );
             }
         }
-        else{
-            strLogs = "There is another indexation "+IndexationService.getIsIndexing()+" !";
+        else
+        {
+            strLogs = I18nService.getLocalizedString( INDEXATION_MESSAGE_ISINDEXING, request.getLocale() );
         }
         model.put(MARK_LOGS, strLogs);
 

@@ -47,6 +47,8 @@ import fr.paris.lutece.portal.service.util.AppLogService;
 import fr.paris.lutece.portal.service.util.AppPathService;
 import fr.paris.lutece.portal.service.util.AppPropertiesService;
 import fr.paris.lutece.portal.service.util.IndexationLogService;
+import fr.paris.lutece.util.json.JsonResponse;
+import fr.paris.lutece.util.json.JsonUtil;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -98,6 +100,7 @@ public final class IndexationService
     private static final String PROPERTY_ANALYSER_CLASS_NAME = "search.lucene.analyser.className";
     private static final int DEFAULT_WRITER_MERGE_FACTOR = 20;
     private static final int DEFAULT_WRITER_MAX_FIELD_LENGTH = 1000000;
+    private static final String ALL_INDEXER = "all_indexer";
     
     // Buffer for Logs
     private static IndexationInformation _indexationInformation = new IndexationInformation( );
@@ -218,11 +221,33 @@ public final class IndexationService
      *            Force creating the index
      * @return the result log of the indexing
      */
-    public static synchronized String processIndexing( IndexationMode modeProcessIndex, String strIndexerTreated ) {
+    public static synchronized String processIndexing( boolean bCreate ) 
+    {
+        if(bCreate)
+        {
+            return processIndexing(IndexationMode.getIndexationMode("full"), ALL_INDEXER);
+        }
+        else
+        {
+            return processIndexing(IndexationMode.getIndexationMode("incremental"), ALL_INDEXER);
+        }
+    }
+
+    /**
+     * Process the indexing
+     *
+     * @param modeProcessIndex
+     *            Mode of Indexation
+     * @param strIndexerTreated
+     *            Witch indexer will be use
+     * @return the result log of the indexing
+     */
+    public static synchronized String processIndexing( IndexationMode modeProcessIndex, String strIndexerTreated ) 
+    {
         // String buffer for building the response page;
         _writer = null;
         Directory dir = null;
-        if ( strIndexerTreated.equals( "All" ) )
+        if ( strIndexerTreated.equals( ALL_INDEXER ) )
         {
             strIndexerTreated = null;
         }
@@ -239,18 +264,13 @@ public final class IndexationService
             // run the Mode Choosen by users
             switch ( modeProcessIndex ) 
             {
-
-                /*case INCREMENTAL_DIRECTLY:
-                    // not implemented yet
-                    _writer = new IndexWriter(dir, conf);
-                    break;*/
                 case FULL:
                     conf.setOpenMode( OpenMode.CREATE );
                     _writer = new IndexWriter( dir, conf );
                     processFullIndexing( strIndexerTreated );
                     break;
 
-                case INCREMENTAL_BY_BULK:
+                case INCREMENTAL:
                     conf.setOpenMode( OpenMode.APPEND );
                     _writer = new IndexWriter( dir, conf );
                     processIncrementalIndexing( strIndexerTreated );
@@ -897,30 +917,28 @@ public final class IndexationService
      */
     public static AllIndexationInformations getAllIndexationInformations(){
         // Set a New Map for template
-        Map<String,IndexationInformation> mapCurrentIndexersInformation = new HashMap<>(_mapIndexationInformation);
-        AllIndexationInformations allIndexationInformations = new AllIndexationInformations(_generalIndexLog,mapCurrentIndexersInformation);
         int _numberOfItemsProcessedTotal = 0;
         int _numberOfItemsFailed = 0;
         
         for (SearchIndexer indexer : getIndexerListSortedByName())
         {
-            if (indexer.isEnable() && mapCurrentIndexersInformation.get(indexer.getName()) != null )
+            if (indexer.isEnable() && _mapIndexationInformation.get(indexer.getName()) != null )
             {
-                if(mapCurrentIndexersInformation.get(indexer.getName()).getUpdatedIndexation())
+                if(_mapIndexationInformation.get(indexer.getName()).getUpdatedIndexation())
                 {
-                    mapCurrentIndexersInformation.get(indexer.getName()).setNumberOfItemsToProcess(indexer.getNumberOfElementsToProcess());
-                    mapCurrentIndexersInformation.get(indexer.getName()).setNumberOfItemsProcessed(indexer.getNumberOfElementsProcessed());
-                    mapCurrentIndexersInformation.get(indexer.getName()).setNumberOfItemsFailed(indexer.getNumberOfElementsFailed());
+                    _mapIndexationInformation.get(indexer.getName()).setNumberOfItemsToProcess(indexer.getNumberOfElementsToProcess());
+                    _mapIndexationInformation.get(indexer.getName()).setNumberOfItemsProcessed(indexer.getNumberOfElementsProcessed());
+                    _mapIndexationInformation.get(indexer.getName()).setNumberOfItemsFailed(indexer.getNumberOfElementsFailed());
                 }
                 
-                mapCurrentIndexersInformation.get(indexer.getName()).setTreatmentDurationMs(mapCurrentIndexersInformation.get(indexer.getName()).getTreatmentDurationMs());
+                _mapIndexationInformation.get(indexer.getName()).setTreatmentDurationMs(_mapIndexationInformation.get(indexer.getName()).getTreatmentDurationMs());
                 if( _mapListIndexationItemsLog.get(indexer.getName()) != null)
                 {
-                    mapCurrentIndexersInformation.get(indexer.getName()).setListIndexationItemsLog(_mapListIndexationItemsLog.get(indexer.getName()));
+                    _mapIndexationInformation.get(indexer.getName()).setListIndexationItemsLog(_mapListIndexationItemsLog.get(indexer.getName()));
                 }
 
-                _numberOfItemsProcessedTotal += mapCurrentIndexersInformation.get(indexer.getName()).getNumberOfItemsProcessed();
-                _numberOfItemsFailed += mapCurrentIndexersInformation.get(indexer.getName()).getNumberOfItemsFailed();
+                _numberOfItemsProcessedTotal += _mapIndexationInformation.get(indexer.getName()).getNumberOfItemsProcessed();
+                _numberOfItemsFailed += _mapIndexationInformation.get(indexer.getName()).getNumberOfItemsFailed();
                 
                 IndexationLogService.debug( "IndexerName : " + indexer.getName() 
                                           + " Number Of Elements To Process : " + indexer.getNumberOfElementsToProcess() 
@@ -936,6 +954,7 @@ public final class IndexationService
         IndexationLogService.debug( "General Index Logs - Number Of Elements To Process : " + _numberOfItemsToProcessTotal 
                                   + " Number Of Elements Processed : " + _numberOfItemsProcessedTotal 
                                   + " Number Of Elements Failed : " + _numberOfItemsFailed );
+        AllIndexationInformations allIndexationInformations = new AllIndexationInformations(_generalIndexLog,_mapIndexationInformation);                          
         return allIndexationInformations;
     }
     
@@ -946,6 +965,21 @@ public final class IndexationService
      * @return String  JsonString of logs
      */
     public static String getJsonString(AllIndexationInformations allIndexationInformations )
+    {
+        
+        Map<String,IndexationInformation> mapCurrentIndexersInformation = allIndexationInformations.getMapCurrentIndexersInformation();
+
+        JsonResponse jsonResponse = new JsonResponse(allIndexationInformations); 
+        return JsonUtil.buildJsonResponse(jsonResponse);
+        
+    }
+
+    /**
+     * Get the Logs in Json format
+     * @param allIndexationInformations
+     * @return String  JsonString of logs
+     */
+    /*public static String getJsonString(AllIndexationInformations allIndexationInformations )
     {
         
         ObjectMapper mapper = new ObjectMapper();
@@ -1018,7 +1052,10 @@ public final class IndexationService
         }
         sbIndexerLogsRecover.append("]");
         return sbIndexerLogsRecover.toString();
-    }
+    }*/
+
+
+    
 
 }
 

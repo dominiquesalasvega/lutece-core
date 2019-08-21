@@ -4,12 +4,13 @@
             <@boxHeader title='#i18n{portal.search.manage_indexer.labelIndexersList}' boxTools=true>
                 <@tform method='get' name='doIndexing' action='jsp/admin/search/DoIndexing.jsp' class='pull-right'>
                     <input type="hidden" id="indexingToken" name="token" value="${token}">
+                    <input type="hidden" id="indexerName" name="indexer_name" value="all_indexer">
                     <@button class="indexation_action" type='submit' buttonIcon='repeat'
                         title='#i18n{portal.search.manage_indexer.buttonDoIndex}' name='indexation_mode' size=''
-                        value="full,All" />
+                        value="full" />
                     <@button class="indexation_action" type='submit' buttonIcon='refresh'
-                        title='#i18n{portal.search.manage_indexer.buttonDoIncrementalbyBulkIndex}'
-                        name='indexation_mode' size='' value="incremental_by_bulk,All" />
+                        title='#i18n{portal.search.manage_indexer.buttonDoIncrementalIndex}'
+                        name='indexation_mode' size='' value="incremental" />
                 </@tform>
             </@boxHeader>
             <@boxBody>
@@ -21,7 +22,7 @@
                 <i id="loader" class="fa fa-spinner fa-pulse fa-3x fa-fw hide"
                     style="font-size:36px;color:#007bff;"></i>
                 <div class="alert alert-success hide" id="alert_success_indexation" role="alert">
-                    <@icon style='check' class="text-success" /> Indexing Done !
+                    <@icon style='check' class="text-success" /> #i18n{portal.search.manage_indexer.treatmentDone}
                 </div>
                 <@table>
                     <tr>
@@ -54,14 +55,15 @@
                                     <div>
                                         <@tform method='get' name='doIndexing' action='jsp/admin/search/DoIndexing.jsp'
                                             class='pull-right'>
+                                            <input type="hidden" id="indexerName" name="indexer_name" value="${indexer.name}">
                                             <input type="hidden" id="indexingToken" name="token" value="${token}">
                                             <@button class="indexation_action" type='submit' buttonIcon='repeat'
                                                 title='#i18n{portal.search.manage_indexer.buttonDoIndex}'
-                                                name='indexation_mode' size='' value="full,${indexer.name}" />
+                                                name='indexation_mode' size='' value="full" />
                                             <@button class="indexation_action" type='submit' buttonIcon='refresh'
-                                                title='#i18n{portal.search.manage_indexer.buttonDoIncrementalbyBulkIndex}'
+                                                title='#i18n{portal.search.manage_indexer.buttonDoIncrementalIndex}'
                                                 name='indexation_mode' size=''
-                                                value="incremental_by_bulk,${indexer.name}" />
+                                                value="incremental" />
                                         </@tform>
                                     </div>
                                 </#if>

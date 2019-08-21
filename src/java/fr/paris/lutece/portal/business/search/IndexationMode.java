@@ -41,7 +41,7 @@ import fr.paris.lutece.portal.service.util.AppLogService;
  * @return the Mode if it does exist or null if it doesn't
  */
 public enum IndexationMode {
-    INCREMENTAL_BY_BULK, FULL, INCREMENTAL_DIRECTLY;
+    INCREMENTAL, FULL;
 
     /**
      * get the indexers Mode
@@ -53,10 +53,8 @@ public enum IndexationMode {
         switch (strIndexationMode) {
         case "full":
             return FULL;
-        case "incremental_by_bulk":
-            return INCREMENTAL_BY_BULK;
-        case "incremental_directly":
-            return INCREMENTAL_DIRECTLY;
+        case "incremental":
+            return INCREMENTAL;
         default:
             AppLogService.error("Unknown Indexation Mode : Provided " + strIndexationMode + " is not valid ");
             return null;

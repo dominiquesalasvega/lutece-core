@@ -64,6 +64,16 @@ import java.util.Map;
             this.generalIndexLog = generalIndexLog;
             this.mapCurrentIndexersInformation = mapCurrentIndexersInformation;
         }
+
+        /**
+         * Construtor
+         * @param allIndexationInformations
+         */
+        public AllIndexationInformations(AllIndexationInformations allIndexationInformations)
+        {   
+            this.generalIndexLog = allIndexationInformations.getGeneralIndexLog();
+            this.mapCurrentIndexersInformation = allIndexationInformations.getMapCurrentIndexersInformation();
+        }
         
         
         

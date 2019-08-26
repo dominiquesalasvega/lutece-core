@@ -2,6 +2,8 @@
     <@columns>
         <@box color='danger'>
             <@boxHeader title='#i18n{portal.search.manage_indexer.labelIndexersList}' boxTools=true>
+                <@button class="indexation_stop" type='submit' buttonIcon='stop'
+                title='Stop' name='indexation_stop' size='' value="" />
                 <@tform method='get' name='doIndexing' action='jsp/admin/search/DoIndexing.jsp' class='pull-right'>
                     <input type="hidden" id="indexingToken" name="token" value="${token}">
                     <input type="hidden" id="indexerName" name="indexer_name" value="all_indexer">
@@ -23,6 +25,9 @@
                     style="font-size:36px;color:#007bff;"></i>
                 <div class="alert alert-success hide" id="alert_success_indexation" role="alert">
                     <@icon style='check' class="text-success" /> #i18n{portal.search.manage_indexer.treatmentDone}
+                </div>
+                <div class="alert alert-danger hide" id="alert_stop_indexation" role="alert">
+                    <@icon style='fas fa-stop-circle' class="text-danger" /> #i18n{portal.search.manage_indexer.treatmentStopped}
                 </div>
                 <@table>
                     <tr>
@@ -55,8 +60,8 @@
                                     <div>
                                         <@tform method='get' name='doIndexing' action='jsp/admin/search/DoIndexing.jsp'
                                             class='pull-right'>
+                                            <input type="hidden" id="indexingToken" name="token" value='${token}'>
                                             <input type="hidden" id="indexerName" name="indexer_name" value="${indexer.name}">
-                                            <input type="hidden" id="indexingToken" name="token" value="${token}">
                                             <@button class="indexation_action" type='submit' buttonIcon='repeat'
                                                 title='#i18n{portal.search.manage_indexer.buttonDoIndex}'
                                                 name='indexation_mode' size='' value="full" />
@@ -99,7 +104,7 @@
         headerInfosIndexers = "";
     var doIndexingUrl = "jsp/admin/search/DoIndexing.jsp";
     var getIndexingLogsUrl = "jsp/admin/search/GetIndexingLogs.jsp";
-
+    var stopIndexation = "jsp/admin/search/StopIndexation.jsp";
 
     $(".btn1").click(function (e) {
         e.preventDefault();
@@ -109,11 +114,23 @@
         document.getElementById("logs_" + IndexerName).classList.toggle('hide');
     });
 
-    function makeAjaxCall(url, methodType, dataType, callback) {
+    $(".indexation_stop").click(function (e) {
+        e.preventDefault();
+        makeAjaxCall(stopIndexation, "GET", "html").then(function (response) {
+            $('.indexation_action').attr("disabled", false);
+            $("#progressBar").addClass('hide');
+            $("#loader").addClass('hide');
+            $("#alert_danger_indexation").removeClass("hide");
+            $('.indexation_stop').attr("disabled", true);
+        });
+    });
+
+    function makeAjaxCall(url, methodType, dataType, data) {
         return $.ajax({
             url: url,
             method: methodType,
-            dataType: dataType
+            dataType: dataType,
+            data: data
         });
     }
 
@@ -136,8 +153,9 @@
 
     $('.indexation_action').click(function (e) {
         e.preventDefault();
+        $('.indexation_stop').attr("disabled", false);
         initIndexation();
-        makeAjaxCall(doIndexingUrl + "?indexation_mode=" + $(this).val(), "GET", "html").then(function (
+        makeAjaxCall(doIndexingUrl + "?indexation_mode=" + $(this).val(), "GET", "html", $(this).closest("form[name=doIndexing]").serialize()).then(function (
             response) {
             getIndexingLogs()
         });
@@ -155,84 +173,91 @@
     }
     
 
-    function logsIndexers(response) {
-        const indexers = document.querySelectorAll('.indexer');
-        indexers.forEach(function (el) {
-            const indexer = el.getAttribute('indexer');
-            response.forEach(function (indexerEl) {
-                if (indexerEl.hasOwnProperty("indexerName")) {
+    function logsIndexers(response) 
+    {
+        if(response.status == "OK")
+        {
+            const data = response.result;
+            const indexers = data.mapCurrentIndexersInformation;
+
+            for (var indexer in indexers) 
+            {
+                if( indexers.hasOwnProperty( indexer ) ) 
+                {
+                    const indexerEl = indexers[indexer]
                     headerInfosIndexer  = ""; errorIndexerLogs = "";
                     $("#button_"+ indexerEl.indexerName).removeClass('hide');
-                    headerInfosIndexer += "<strong>Indexation Mode</strong> : &nbsp;" + indexerEl
-                        .indexationMode +
-                        "&nbsp;&nbsp; <br>";
-                    headerInfosIndexer += "<strong>Number of Items to Process</strong> : &nbsp;" +
-                        indexerEl
-                        .numberOfItemsToProcess +
-                        "&nbsp;&nbsp; <br>";
-                    headerInfosIndexer += "<strong>Number of Items Processed</strong> : &nbsp;" +
-                        indexerEl
-                        .numberOfItemsProcessed +
-                        "&nbsp;&nbsp; <br>";
-                    headerInfosIndexer += "<strong>Duration of Treatment</strong> : &nbsp;" + indexerEl
-                        .treatmentDurationMs +
-                        " &nbsp; ms &nbsp; <br>";
-                    if (indexerEl.numberOfItemsFailed > 0) {
-                        headerInfosIndexer += "<strong>Number Of Errors</strong> : &nbsp;" + indexerEl
-                            .numberOfItemsFailed +
-                            "&nbsp;&nbsp; <br> ";
+                    headerInfosIndexer += "<strong>Indexation Mode</strong> : &nbsp;" 
+                                          + indexerEl.indexationMode 
+                                          + "&nbsp;&nbsp; <br>";
+                    headerInfosIndexer += "<strong>Number of Items to Process</strong> : &nbsp;" 
+                                          + indexerEl.numberOfItemsToProcess 
+                                          + "&nbsp;&nbsp; <br>";
+                    headerInfosIndexer += "<strong>Number of Items Processed</strong> : &nbsp;" 
+                                          + indexerEl.numberOfItemsProcessed 
+                                          + "&nbsp;&nbsp; <br>";
+                    headerInfosIndexer += "<strong>Duration of Treatment</strong> : &nbsp;" 
+                                          + indexerEl.treatmentDurationMs 
+                                          + " &nbsp; ms &nbsp; <br>";
+                    if (indexerEl.numberOfItemsFailed > 0) 
+                    {
+                        headerInfosIndexer += "<strong>Number Of Errors</strong> : &nbsp;" 
+                                              + indexerEl.numberOfItemsFailed 
+                                              + "&nbsp;&nbsp; <br> ";
                     }
-                    if (indexerEl.updatedIndexer == false) {
-                        headerInfosIndexer += "<strong>Indexer is up to date</strong> : &nbsp;" +
-                            indexerEl
-                            .updatedIndexer +
-                            "&nbsp;&nbsp; <br> ";
+                    if (indexerEl.updatedIndexer == false) 
+                    {
+                        headerInfosIndexer += "<strong>Indexer is up to date</strong> : &nbsp;" 
+                                              + indexerEl.updatedIndexer 
+                                              + "&nbsp;&nbsp; <br> ";
                         headerInfosIndexer += "No progress bar/no treatment by Bulk for Items<br> ";
                     }
-                    for (log in indexerEl.listIndexerLogs) {
-                        errorIndexerLogs += "<strong>uid</strong> : &nbsp;" + log.uid +
-                            "  &nbsp;&nbsp;";
-                        errorIndexerLogs += "<strong>Error</strong> : &nbsp;" + log.action +
-                            "&nbsp;&nbsp; " + log.errorDocLog + " <br> ";
+                    for (log in indexerEl.listIndexerLogs) 
+                    {
+                        errorIndexerLogs += "<strong>uid</strong> : &nbsp;" 
+                                            + log.uid 
+                                            + "  &nbsp;&nbsp;";
+                        errorIndexerLogs += "<strong>Error</strong> : &nbsp;" 
+                                            + log.action 
+                                            + "&nbsp;&nbsp; " 
+                                            + log.errorDocLog 
+                                            + " <br> ";
                     }
 
-                $("#logHeader_" + indexerEl.indexerName).html(headerInfosIndexer);
-                $("#log_" + indexerEl.indexerName).html(errorIndexerLogs);
+                    $("#logHeader_" + indexerEl.indexerName).html(headerInfosIndexer);
+                    $("#log_" + indexerEl.indexerName).html(errorIndexerLogs);   
                 }
+            }
 
-            })
+            $("#General_logs").removeClass('hide');
+            headerInfosIndexers = "";
+            const percent = (data.generalIndexLog.numberOfItemsProcessed / data.generalIndexLog.numberOfItemsToProcess) * 100;
+            headerInfosIndexers += "<strong> Duration of Treatment </strong> : " + data.generalIndexLog.treatmentDurationMs +
+                " ms <br>";
+            headerInfosIndexers += "<strong> Number Of Items To Process </strong> : " + data.generalIndexLog.numberOfItemsToProcess +
+                " <br>";
+            headerInfosIndexers += "<strong> Number Of Items Processed </strong> : " + data.generalIndexLog.numberOfItemsProcessed +
+                " <br>";
+            headerInfosIndexers += "<strong> Percent of Avancement </strong> : " + Math.floor(percent) + " %<br>";
+            if (data.generalIndexLog.numberOfItemsFailed > 0) {
+                headerInfosIndexers += "<strong>Number Of Errors</strong> : &nbsp;" + data.generalIndexLog.numberOfItemsFailed +
+                    "&nbsp;&nbsp; <br> ";
+            }
+            isIndexing = data.generalIndexLog.isIndexing;
+            if (!isIndexing)
+            {
+                $('.indexation_action').attr("disabled", false);
+                $("#progressBar").addClass('hide');
+                $("#loader").addClass('hide');
+                $("#alert_success_indexation").removeClass("hide")
+                $('.indexation_stop').attr("disabled", true);
+            }
 
-
-
-        });
-
-        $("#General_logs").removeClass('hide');
-        headerInfosIndexers = "";
-        const percent = (response[0].numberOfItemsProcessed / response[0].numberOfItemsToProcess) * 100;
-        headerInfosIndexers += "<strong> Duration of Treatment </strong> : " + response[0].treatmentDurationMs +
-            " ms <br>";
-        headerInfosIndexers += "<strong> Number Of Items To Process </strong> : " + response[0].numberOfItemsToProcess +
-            " <br>";
-        headerInfosIndexers += "<strong> Number Of Items Processed </strong> : " + response[0].numberOfItemsProcessed +
-            " <br>";
-        headerInfosIndexers += "<strong> Percent of Avancement </strong> : " + Math.floor(percent) + " %<br>";
-        if (response[0].numberOfItemsFailed > 0) {
-            headerInfosIndexers += "<strong>Number Of Errors</strong> : &nbsp;" + response[0].numberOfItemsFailed +
-                "&nbsp;&nbsp; <br> ";
+            $("#prog-bar").width(percent + "%");
+            $("#prog-bar").attr("aria-valuenow", percent);
+            $("#prog-bar").text(Math.floor(percent) + "%");
+            $("#General_logs").html(headerInfosIndexers);
         }
-        isIndexing = response[0].isIndexing;
-        if (!isIndexing)
-        {
-            $('.indexation_action').attr("disabled", false);
-            $("#progressBar").addClass('hide');
-            $("#loader").addClass('hide');
-            $("#alert_success_indexation").removeClass("hide")
-        }
-
-        $("#prog-bar").width(percent + "%");
-        $("#prog-bar").attr("aria-valuenow", percent);
-        $("#prog-bar").text(Math.floor(percent) + "%");
-        $("#General_logs").html(headerInfosIndexers);
     }
 
     function pause(time){

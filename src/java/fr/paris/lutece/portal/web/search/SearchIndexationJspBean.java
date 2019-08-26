@@ -140,4 +140,16 @@ public class SearchIndexationJspBean extends AdminFeaturesPageJspBean
         return IndexationService.getJsonString(allIndexationInformations);
 
     }
+
+
+    /**
+     * STOP Indexation
+     * @param request
+     * @return String
+     */
+    public String stopIndexation(HttpServletRequest request) {
+
+        IndexationService.setStop(true);
+        return "Indexation Stopped";
+    }
 }

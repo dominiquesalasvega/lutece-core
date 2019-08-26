@@ -119,6 +119,7 @@ public final class IndexationService
     private static final int NUMBER_OF_ERRORS_PRINT = 5000;
     private static int _numberOfItemsToProcessTotal = 0;
     private static int _numberOfLoop = 1;
+    private static boolean STOP;
     private static boolean isIndexing;
     private static Analyzer _analyzer;
     private static Map<String, SearchIndexer> _mapIndexers = new ConcurrentHashMap<String, SearchIndexer>( );
@@ -287,6 +288,7 @@ public final class IndexationService
         } 
         finally 
         {
+
             try 
             {
                 if ( _writer != null ) 
@@ -296,6 +298,8 @@ public final class IndexationService
             } 
             catch ( IOException e ) 
             {
+                setIsIndexing( false );
+                _generalIndexLog.setIsIndexing( isIndexing );
                 error( "Close Writer ", e, "" );
             }
 
@@ -308,6 +312,8 @@ public final class IndexationService
             } 
             catch ( IOException e ) 
             {
+                setIsIndexing( false );
+                _generalIndexLog.setIsIndexing( isIndexing );
                 error( "Close dir",e,"" );
             }
             setIsIndexing( false );
@@ -353,8 +359,16 @@ public final class IndexationService
 
                     for (int index = 0 ; index < _numberOfLoop; index++)
                     {
-                        // the indexer will call write(doc)
-                        indexer.indexDocuments();
+                        if(!STOP)
+                        {
+                            // the indexer will call write(doc)
+                            indexer.indexDocuments();
+                        }
+                        else{
+                            IndexationLogService.debug("Indexation Stopped by User");
+                            break;
+                        }
+                        
                     }
                     Date end = new Date();
                     _mapIndexationInformation.get(_strIndexerName).setTreatmentDurationMs(end.getTime() - start.getTime());
@@ -373,6 +387,7 @@ public final class IndexationService
         IndexationLogService.debug("End Full Indexing");
         AppLogService.info("End Full Indexing");
         setIsIndexing(false);
+        _generalIndexLog.setIsIndexing( isIndexing );
     }
 
 
@@ -455,12 +470,20 @@ public final class IndexationService
                                             && (doc.get(SearchItem.FIELD_DOCUMENT_PORTLET_ID).equals(
                                                     doc.get(SearchItem.FIELD_UID) + "&" + action.getIdPortlet())))) 
                             {
-                                // Indexing 1 item
-                                processDocument(action, doc);
-                                iteration++;
-                                indexInfo.setNumberOfItemsProcessed(iteration); 
-                                indexInfo.setNumberOfItemsFailed(indexer.getNumberOfElementsFailed());
-                                // Get items by Items and put it on a mapper                 
+                                if(!STOP)
+                                {
+                                    // Indexing 1 item
+                                    processDocument(action, doc);
+                                    iteration++;
+                                    indexInfo.setNumberOfItemsProcessed(iteration); 
+                                    indexInfo.setNumberOfItemsFailed(indexer.getNumberOfElementsFailed());
+                                    // Get items by Items and put it on a mapper 
+                                }
+                                else{
+                                    IndexationLogService.debug("Indexation Stopped by User");
+                                    break;
+                                }
+                                                
                             }
                         }
                     }
@@ -490,6 +513,7 @@ public final class IndexationService
         IndexationLogService.debug("End Incremental Indexing");
         AppLogService.info("End Incremental Indexing");
         setIsIndexing(false);
+        _generalIndexLog.setIsIndexing( isIndexing );
     }
 
     /**
@@ -504,18 +528,26 @@ public final class IndexationService
      */
     private static void deleteDocument( IndexerAction action ) throws CorruptIndexException, IOException
     {
-        if ( action.getIdPortlet( ) != ALL_DOCUMENT )
+        
+        if(!STOP)
         {
-            // delete only the index linked to this portlet
-            _writer.deleteDocuments( new Term( SearchItem.FIELD_DOCUMENT_PORTLET_ID, action.getIdDocument( ) + "&" + Integer.toString( action.getIdPortlet( ) ) ) );
+            if ( action.getIdPortlet( ) != ALL_DOCUMENT )
+            {
+                // delete only the index linked to this portlet
+                _writer.deleteDocuments( new Term( SearchItem.FIELD_DOCUMENT_PORTLET_ID, action.getIdDocument( ) + "&" + Integer.toString( action.getIdPortlet( ) ) ) );
+            }
+            else
+            {
+                // delete all index linked to uid
+                _writer.deleteDocuments( new Term( SearchItem.FIELD_UID, action.getIdDocument( ) ) );
+            }
+
+        IndexationLogService.debug("Deleting #"+action.getIdDocument()+"\r\n");
         }
         else
         {
-            // delete all index linked to uid
-            _writer.deleteDocuments( new Term( SearchItem.FIELD_UID, action.getIdDocument( ) ) );
+            logDoc( "STOPPED BY USER ", action );
         }
-
-        IndexationLogService.debug("Deleting #"+action.getIdDocument()+"\r\n");
     }
 
     /**
@@ -532,27 +564,36 @@ public final class IndexationService
      */
     private static void processDocument( IndexerAction action, Document doc ) throws CorruptIndexException, IOException
     {
-        if ( action.getIdTask( ) == IndexerAction.TASK_CREATE )
+        
+        if(!STOP)
         {
-            _writer.addDocument( doc );
-            logDoc( "Adding ", doc );
+            if ( action.getIdTask( ) == IndexerAction.TASK_CREATE )
+            { 
+                _writer.addDocument( doc );
+                logDoc( "Adding ", doc );
+            }
+            else
+                if ( action.getIdTask( ) == IndexerAction.TASK_MODIFY )
+                {
+                    if ( action.getIdPortlet( ) != ALL_DOCUMENT )
+                    {
+                        // delete only the index linked to this portlet
+                        _writer.updateDocument( new Term( SearchItem.FIELD_DOCUMENT_PORTLET_ID, doc.get( SearchItem.FIELD_DOCUMENT_PORTLET_ID ) ), doc );
+                    }
+                    else
+                    {
+                        _writer.updateDocument( new Term( SearchItem.FIELD_UID, doc.getField( SearchItem.FIELD_UID ).stringValue( ) ), doc );
+                    }
+
+                    logDoc( "Updating ", doc );
+                }
         }
         else
-            if ( action.getIdTask( ) == IndexerAction.TASK_MODIFY )
-            {
-                if ( action.getIdPortlet( ) != ALL_DOCUMENT )
-                {
-                    // delete only the index linked to this portlet
-                    _writer.updateDocument( new Term( SearchItem.FIELD_DOCUMENT_PORTLET_ID, doc.get( SearchItem.FIELD_DOCUMENT_PORTLET_ID ) ), doc );
-                }
-                else
-                {
-                    _writer.updateDocument( new Term( SearchItem.FIELD_UID, doc.getField( SearchItem.FIELD_UID ).stringValue( ) ), doc );
-                }
-
-                logDoc( "Updating ", doc );
-            }
+        {
+            logDoc( "STOPPED BY USER ", doc );
+        }
     }
+
 
     /**
      * Index one document, called by plugin indexers
@@ -566,8 +607,14 @@ public final class IndexationService
      */
     public static void write( Document doc ) throws CorruptIndexException, IOException
     {
-        _writer.addDocument( doc );
-        logDoc( "Indexing ", doc );
+        if(!STOP)
+        {
+            _writer.addDocument( doc );
+            logDoc( "Indexing ", doc );
+        }
+        else{
+            logDoc( "STOPPED BY USER ", doc );
+        }
     }
 
     /**
@@ -586,6 +633,25 @@ public final class IndexationService
                                   + " Type : " + doc.get(SearchItem.FIELD_TYPE) 
                                   + " Uid : " + doc.get(SearchItem.FIELD_UID)
                                   + " Title :" + doc.get(SearchItem.FIELD_TITLE));
+        
+    }
+
+    /**
+     * Log an action made on a document
+     * 
+     * @param strAction
+     *            The Action
+     * @param action
+     *            The IndexerAction
+     */
+    private static void logDoc( String strAction, IndexerAction action )
+    {
+        // Add Indexation infos on DEBUG
+        IndexationLogService.debug( "IndexerName : " + _strIndexerName 
+                                  + " Action : " + strAction 
+                                  + " IdDocument : " + action.getIdDocument() 
+                                  + " IdPortlet : " + Integer.toString(action.getIdPortlet())
+                                  + " IdTask :" + action.getIdTask());
         
     }
 
@@ -828,12 +894,23 @@ public final class IndexationService
         isIndexing = isIndexation;
     }
 
+    /**
+     * Set a Boolean , false -> NOT STOP Indexation
+     *                 true -> STOP Indexation
+     * @param boolean
+     */
+    public static void setStop(boolean stop)
+    {
+        STOP = stop;
+    }
+
 
     /**
     * Initialize All paramater for Indexer
     * @param modeProcessIndex Mode Of indexation chosen
     */
     private static void initializationIndexerParam(String modeProcessIndex,String indexerName){
+        setStop(false);
         _indexationInformation.resetIndexationInformation();
         _generalIndexLog.resetGeneralIndexLog();
         _mapIndexationInformation.clear();
@@ -966,9 +1043,6 @@ public final class IndexationService
      */
     public static String getJsonString(AllIndexationInformations allIndexationInformations )
     {
-        
-        Map<String,IndexationInformation> mapCurrentIndexersInformation = allIndexationInformations.getMapCurrentIndexersInformation();
-
         JsonResponse jsonResponse = new JsonResponse(allIndexationInformations); 
         return JsonUtil.buildJsonResponse(jsonResponse);
         

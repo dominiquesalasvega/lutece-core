@@ -6,7 +6,6 @@
                 title='Stop' name='indexation_stop' size='' value="" />
                 <@tform method='get' name='doIndexing' action='jsp/admin/search/DoIndexing.jsp' class='pull-right'>
                     <input type="hidden" id="indexingToken" name="token" value="${token}">
-                    <input type="hidden" id="indexerName" name="indexer_name" value="all_indexer">
                     <@button class="indexation_action" type='submit' buttonIcon='repeat'
                         title='#i18n{portal.search.manage_indexer.buttonDoIndex}' name='indexation_mode' size=''
                         value="full" />
@@ -56,22 +55,6 @@
                             <td>${indexer.description}</td>
                             <td>${indexer.pathIndex!''}</td>
                             <td style="align-items: center;">
-                                <#if indexer.enable>
-                                    <div>
-                                        <@tform method='get' name='doIndexing' action='jsp/admin/search/DoIndexing.jsp'
-                                            class='pull-right'>
-                                            <input type="hidden" id="indexingToken" name="token" value='${token}'>
-                                            <input type="hidden" id="indexerName" name="indexer_name" value="${indexer.name}">
-                                            <@button class="indexation_action" type='submit' buttonIcon='repeat'
-                                                title='#i18n{portal.search.manage_indexer.buttonDoIndex}'
-                                                name='indexation_mode' size='' value="full" />
-                                            <@button class="indexation_action" type='submit' buttonIcon='refresh'
-                                                title='#i18n{portal.search.manage_indexer.buttonDoIncrementalIndex}'
-                                                name='indexation_mode' size=''
-                                                value="incremental" />
-                                        </@tform>
-                                    </div>
-                                </#if>
                                 <div id="button_${indexer.name}" class='buttonLogs hide'>
                                     <@button class="btn1" buttonIcon='plus'
                                         title='#i18n{portal.search.manage_indexer.buttonIndexerLog}' />
@@ -187,37 +170,30 @@
                     const indexerEl = indexers[indexer]
                     headerInfosIndexer  = ""; errorIndexerLogs = "";
                     $("#button_"+ indexerEl.indexerName).removeClass('hide');
-                    headerInfosIndexer += "<strong>Indexation Mode</strong> : &nbsp;" 
+                    headerInfosIndexer += "<strong>#i18n{portal.search.manage_indexer.indexation_Mode}</strong> : &nbsp;" 
                                           + indexerEl.indexationMode 
                                           + "&nbsp;&nbsp; <br>";
-                    headerInfosIndexer += "<strong>Number of Items to Process</strong> : &nbsp;" 
+                    headerInfosIndexer += "<strong>#i18n{portal.search.manage_indexer.numberOfItemsToProcess}</strong> : &nbsp;" 
                                           + indexerEl.numberOfItemsToProcess 
                                           + "&nbsp;&nbsp; <br>";
-                    headerInfosIndexer += "<strong>Number of Items Processed</strong> : &nbsp;" 
+                    headerInfosIndexer += "<strong>#i18n{portal.search.manage_indexer.numberOfItemsProcessed}</strong> : &nbsp;" 
                                           + indexerEl.numberOfItemsProcessed 
                                           + "&nbsp;&nbsp; <br>";
-                    headerInfosIndexer += "<strong>Duration of Treatment</strong> : &nbsp;" 
+                    headerInfosIndexer += "<strong>#i18n{portal.search.manage_indexer.durationOfTreatment}</strong> : &nbsp;" 
                                           + indexerEl.treatmentDurationMs 
                                           + " &nbsp; ms &nbsp; <br>";
                     if (indexerEl.numberOfItemsFailed > 0) 
                     {
-                        headerInfosIndexer += "<strong>Number Of Errors</strong> : &nbsp;" 
+                        headerInfosIndexer += "<strong>#i18n{portal.search.manage_indexer.numberOfErrors}</strong> : &nbsp;" 
                                               + indexerEl.numberOfItemsFailed 
                                               + "&nbsp;&nbsp; <br> ";
-                    }
-                    if (indexerEl.updatedIndexer == false) 
-                    {
-                        headerInfosIndexer += "<strong>Indexer is up to date</strong> : &nbsp;" 
-                                              + indexerEl.updatedIndexer 
-                                              + "&nbsp;&nbsp; <br> ";
-                        headerInfosIndexer += "No progress bar/no treatment by Bulk for Items<br> ";
                     }
                     for (log in indexerEl.listIndexerLogs) 
                     {
                         errorIndexerLogs += "<strong>uid</strong> : &nbsp;" 
                                             + log.uid 
                                             + "  &nbsp;&nbsp;";
-                        errorIndexerLogs += "<strong>Error</strong> : &nbsp;" 
+                        errorIndexerLogs += "<strong>#i18n{portal.search.manage_indexer.error}</strong> : &nbsp;" 
                                             + log.action 
                                             + "&nbsp;&nbsp; " 
                                             + log.errorDocLog 
@@ -232,20 +208,21 @@
             $("#General_logs").removeClass('hide');
             headerInfosIndexers = "";
             const percent = (data.generalIndexLog.numberOfItemsProcessed / data.generalIndexLog.numberOfItemsToProcess) * 100;
-            headerInfosIndexers += "<strong> Duration of Treatment </strong> : " + data.generalIndexLog.treatmentDurationMs +
+            headerInfosIndexers += "<strong>#i18n{portal.search.manage_indexer.durationOfTreatment}</strong> : " + data.generalIndexLog.treatmentDurationMs +
                 " ms <br>";
-            headerInfosIndexers += "<strong> Number Of Items To Process </strong> : " + data.generalIndexLog.numberOfItemsToProcess +
+            headerInfosIndexers += "<strong>#i18n{portal.search.manage_indexer.numberOfItemsToProcess}</strong> : " + data.generalIndexLog.numberOfItemsToProcess +
                 " <br>";
-            headerInfosIndexers += "<strong> Number Of Items Processed </strong> : " + data.generalIndexLog.numberOfItemsProcessed +
+            headerInfosIndexers += "<strong>#i18n{portal.search.manage_indexer.numberOfItemsProcessed}</strong> : " + data.generalIndexLog.numberOfItemsProcessed +
                 " <br>";
-            headerInfosIndexers += "<strong> Percent of Avancement </strong> : " + Math.floor(percent) + " %<br>";
+            headerInfosIndexers += "<strong>#i18n{portal.search.manage_indexer.percentofAvancement}</strong> : " + Math.floor(percent) + " %<br>";
             if (data.generalIndexLog.numberOfItemsFailed > 0) {
-                headerInfosIndexers += "<strong>Number Of Errors</strong> : &nbsp;" + data.generalIndexLog.numberOfItemsFailed +
+                headerInfosIndexers += "<strong>#i18n{portal.search.manage_indexer.error}</strong> : &nbsp;" + data.generalIndexLog.numberOfItemsFailed +
                     "&nbsp;&nbsp; <br> ";
             }
             isIndexing = data.generalIndexLog.isIndexing;
             if (!isIndexing)
             {
+                $('#indexingToken').val(data.generalIndexLog.token);
                 $('.indexation_action').attr("disabled", false);
                 $("#progressBar").addClass('hide');
                 $("#loader").addClass('hide');
@@ -296,3 +273,4 @@
         border-color: black;
     }
 </style>
+

@@ -135,40 +135,4 @@ public interface SearchIndexer
     {
         return -1;
     }
-
-    /**
-     * Return the number of Elements indexed
-     *
-     * @return a int of number of Elements
-     */
-    default int getNumberOfElementsProcessed( )
-    {
-        return -1;
-    }
-
-    /**
-     * Return the number of Elements Failed
-     *
-     * @return a int of number of Elements Failed
-     */
-    default int getNumberOfElementsFailed( )
-    {
-        return -1;
-    }
-
-    
-    /**
-     * Set the Initialization of Indexer
-     *
-     */
-    default void setInitializationIndexer( )
-    {
-    }
-
-    /**
-     * initialize Indexation of Indexer
-     */
-    default void initIndexer( )
-    {
-    }
 }

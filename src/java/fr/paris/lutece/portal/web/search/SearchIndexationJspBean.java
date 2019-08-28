@@ -69,6 +69,7 @@ public class SearchIndexationJspBean extends AdminFeaturesPageJspBean
     private static final String INDEXER_NAME = "indexer_name";
     private static final String INDEXATION_MESSAGE_ISINDEXING = "portal.search.search_indexation.currentIndexation";
     private static final String INDEXATION_MESSAGE_MODE = "portal.search.search_indexation.indexationMode";
+    private static final String STRING_TOKEN = "token";
 
     /**
      * Displays the indexing parameters
@@ -100,20 +101,20 @@ public class SearchIndexationJspBean extends AdminFeaturesPageJspBean
      */
     public String doIndexing( HttpServletRequest request ) throws AccessDeniedException
     {
-        /*if ( !SecurityTokenService.getInstance( ).validate( request, TEMPLATE_MANAGE_INDEXER ) )
+        if ( !SecurityTokenService.getInstance( ).validate( request, TEMPLATE_MANAGE_INDEXER ) )
         {
             throw new AccessDeniedException( "Invalid security token" );
-        }*/
+        }
         String strLogs;
         HashMap<String, Object> model = new HashMap<String, Object>();
         if (IndexationService.getIsIndexing() == false)
         {
             IndexationService.setIsIndexing(true);
             String strModeIndex = request.getParameter(INDEXATION_MODE);
-            String strIndexerTreated = request.getParameter(INDEXER_NAME);
+            IndexationService.setToken(SecurityTokenService.getInstance( ).getToken( request, TEMPLATE_MANAGE_INDEXER ) );
             IndexationMode modeIndexation = IndexationMode.getIndexationMode(strModeIndex);
             if (modeIndexation != null) {
-                strLogs = IndexationService.processIndexing(modeIndexation,strIndexerTreated);
+                strLogs = IndexationService.processIndexing(modeIndexation);
             } else {
                 strLogs = I18nService.getLocalizedString( INDEXATION_MESSAGE_MODE, request.getLocale() );
             }

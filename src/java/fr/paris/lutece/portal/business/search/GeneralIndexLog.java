@@ -45,6 +45,7 @@ package fr.paris.lutece.portal.business.search;
         private int             numberOfItemsToProcess;
         private int             numberOfItemsProcessed;
         private boolean         isIndexing;
+        private String          token;
 
 
         /**
@@ -57,6 +58,7 @@ package fr.paris.lutece.portal.business.search;
             this.numberOfItemsProcessed = 0;
             this.numberOfItemsToProcess = 0;
             this.isIndexing = true;
+            this.token = null;
         }
 
         /**
@@ -66,14 +68,16 @@ package fr.paris.lutece.portal.business.search;
          * @param numberOfItemsToProcess
          * @param numberOfItemsProcessed
          * @param isIndexing
+         * @param token
          */
-        public GeneralIndexLog(int numberOfItemsFailed,long  treatmentDurationMs , int  numberOfItemsToProcess, int numberOfItemsProcessed, boolean isIndexing)
+        public GeneralIndexLog(int numberOfItemsFailed,long  treatmentDurationMs , int  numberOfItemsToProcess, int numberOfItemsProcessed, boolean isIndexing, String token)
         {
             this.numberOfItemsFailed = numberOfItemsFailed;
             this.treatmentDurationMs = treatmentDurationMs;
             this.numberOfItemsToProcess = numberOfItemsToProcess;
             this.numberOfItemsProcessed = numberOfItemsProcessed;
             this.isIndexing = isIndexing;
+            this.token = token;
         }
 
         
@@ -87,6 +91,7 @@ package fr.paris.lutece.portal.business.search;
             this.numberOfItemsProcessed = 0;
             this.numberOfItemsToProcess = 0;
             this.isIndexing = true;
+            this.token = null;
         }
         
         
@@ -136,6 +141,15 @@ package fr.paris.lutece.portal.business.search;
             return isIndexing;
         }
 
+        /**
+         * Get the token used by request
+         * @return String token
+         */
+        public String getToken()
+        {
+            return token;
+        }
+
 
         /**
          * set the Number Of Items Failed
@@ -181,6 +195,15 @@ package fr.paris.lutece.portal.business.search;
         public void setIsIndexing(boolean isIndexing)
         {
             this.isIndexing = isIndexing;
+        }
+
+        /**
+         * Set the token used by user
+         * @param String token
+         */
+        public void setToken(String token)
+        {
+            this.token = token;
         }
 
 

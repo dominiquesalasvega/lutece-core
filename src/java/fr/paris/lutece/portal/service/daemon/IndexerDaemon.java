@@ -43,19 +43,18 @@ import fr.paris.lutece.portal.business.search.IndexationMode;
 public final class IndexerDaemon extends Daemon
 {
     private static final String PROPERTY_INDEXER_PARAM_TOTAL = "indexer.param.total";
-    private static final boolean TOTAL_INDEXING = Boolean.valueOf( AppPropertiesService.getProperty( PROPERTY_INDEXER_PARAM_TOTAL, "true" ) );
 
     /**
      * Implementation of the run method of the Runnable interface.It processes the daemon treatment.
      */
     public void run( )
     {
-        // Launching of the incremental indexing.
-        IndexationMode modeIndexation = IndexationMode.INCREMENTAL;
+        // Launching of the Full indexing.
+        IndexationMode modeIndexation = IndexationMode.FULL;
         if(!IndexationService.getIsIndexing())
         {
             IndexationService.setIsIndexing(true);
-            setLastRunLogs( IndexationService.processIndexing( modeIndexation , "All") );
+            setLastRunLogs( IndexationService.processIndexing( modeIndexation) );
         }    
     }
 }

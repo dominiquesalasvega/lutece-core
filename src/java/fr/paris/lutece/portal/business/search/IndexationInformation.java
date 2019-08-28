@@ -49,7 +49,6 @@ import java.util.List;
         private int      numberOfItemsToProcess;
         private int      numberOfItemsProcessed;
         private List<IndexationItemLog>  listIndexationItemsLog;
-        private boolean  updatedIndexation;
 
 
 
@@ -66,7 +65,6 @@ import java.util.List;
             this.numberOfItemsToProcess = 0;
             this.numberOfItemsProcessed = 0;
             this.listIndexationItemsLog = null;
-            this.updatedIndexation = true;
         }
 
         
@@ -83,7 +81,6 @@ import java.util.List;
             this.numberOfItemsToProcess = 0;
             this.numberOfItemsProcessed = 0;
             this.listIndexationItemsLog = null;
-            this.updatedIndexation = true;
         }
 
         /**
@@ -98,7 +95,7 @@ import java.util.List;
          * @param listIndexationItemsLog
          * @param updatedIndexation
          */
-        public IndexationInformation(String name,String indexerDescription,String  indexationMode,int numberOfItemsFailed,long  treatmentDurationMs , int numberOfItemsToProcess,int numberOfItemsProcessed,List<IndexationItemLog> listIndexationItemsLog,boolean updatedIndexation)
+        public IndexationInformation(String name,String indexerDescription,String  indexationMode,int numberOfItemsFailed,long  treatmentDurationMs , int numberOfItemsToProcess,int numberOfItemsProcessed,List<IndexationItemLog> listIndexationItemsLog)
         {
             this.indexerName = name;
             this.indexationMode = indexationMode;
@@ -108,7 +105,6 @@ import java.util.List;
             this.numberOfItemsToProcess = numberOfItemsToProcess;
             this.numberOfItemsProcessed = numberOfItemsProcessed;
             this.listIndexationItemsLog = listIndexationItemsLog;
-            this.updatedIndexation = updatedIndexation;
         }
         
         
@@ -192,16 +188,6 @@ import java.util.List;
         {
             return listIndexationItemsLog.size();
         }
-        
-        /**
-         * Get boolean true -> indexer is up to date
-         *             false -> indexer is not up to date
-         * @return boolean
-         */
-        public boolean getUpdatedIndexation()
-        {
-            return updatedIndexation;
-        }
 
 
 
@@ -276,17 +262,6 @@ import java.util.List;
         {
             this.listIndexationItemsLog = listIndexationItemsLog;
         }
-
-        /**
-         * Set a boolean true -> indexer is up to date
-         *               false -> indexer is not up to date
-         * @param updatedIndexation
-         */
-        public void setUpdatedIndexation(boolean updatedIndexation)
-        {
-            this.updatedIndexation = updatedIndexation;
-        }
-        
         
         /**
          * Add to the List of Indexation Items Logs

@@ -56,8 +56,29 @@ public enum IndexationMode {
         case "incremental":
             return INCREMENTAL;
         default:
-            AppLogService.error("Unknown Indexation Mode : Provided " + strIndexationMode + " is not valid ");
+            AppLogService.error("UnknowniIndexation mode : Provided " + strIndexationMode + " is not valid ");
             return null;
+
+        }
+    }
+
+    /**
+     * Get the string of indexation mode
+     * 
+     * @param _indexationMode
+     * @return String String indexation mode
+     */
+    public static String getStrIndexingMode( IndexationMode _indexationMode )
+    {
+        switch( _indexationMode )
+        {
+            case FULL:
+                return "full";
+            case INCREMENTAL:
+                return "incremental";
+            default:
+                AppLogService.error( "Unknown indexation mode " );
+                return null;
 
         }
     }

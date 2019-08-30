@@ -66,10 +66,8 @@ public class SearchIndexationJspBean extends AdminFeaturesPageJspBean
     private static final String MARK_LOGS = "logs";
     private static final String MARK_INDEXERS_LIST = "indexers_list";
     private static final String INDEXATION_MODE = "indexation_mode";
-    private static final String INDEXER_NAME = "indexer_name";
     private static final String INDEXATION_MESSAGE_ISINDEXING = "portal.search.search_indexation.currentIndexation";
     private static final String INDEXATION_MESSAGE_MODE = "portal.search.search_indexation.indexationMode";
-    private static final String STRING_TOKEN = "token";
 
     /**
      * Displays the indexing parameters
@@ -151,6 +149,6 @@ public class SearchIndexationJspBean extends AdminFeaturesPageJspBean
     public String stopIndexation(HttpServletRequest request) {
 
         IndexationService.setStop(true);
-        return "Indexation Stopped";
+        return "Indexation stopped";
     }
 }

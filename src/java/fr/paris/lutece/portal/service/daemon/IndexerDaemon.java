@@ -51,7 +51,7 @@ public final class IndexerDaemon extends Daemon
     public void run( )
     {
         // Launching of the incremental indexing.
-        IndexationMode modeIndexation = IndexationMode.INCREMENTAL_BY_BULK;
+        IndexationMode modeIndexation = IndexationMode.INCREMENTAL;
         if(!IndexationService.getIsIndexing())
         {
             IndexationService.setIsIndexing(true);

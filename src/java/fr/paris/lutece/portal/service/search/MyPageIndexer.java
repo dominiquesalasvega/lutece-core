@@ -101,7 +101,7 @@ public class MyPageIndexer implements SearchIndexer {
                 doc = getDocument(page, url.getUrl());
             } catch (Exception e) {
                 String strMessage = ""+page.getId()+"";
-                IndexationService.error(this.getName(), e, strMessage);
+                IndexationService.error(this, e, strMessage);
             }
 
             if (doc != null) {

@@ -76,7 +76,7 @@ public final class IndexationLogService
     {
         if ( _loggerIndexer.isDebugEnabled( ) )
         {
-            _loggerIndexer.info( objToLog );
+            _loggerIndexer.debug( objToLog );
         }
     }
 

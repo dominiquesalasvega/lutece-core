@@ -62,7 +62,7 @@ public class ProjetIndexer implements SearchIndexer {
     private static final String INDEXER_DESCRIPTION = "Projet Indexer Service";
     private static final String INDEXER_VERSION = "3.0.1";
     private static String INDEXER_PATH_INDEX;
-    private static final int NUMBER_OF_DOC_GENERATED = 35000; 
+    private static final int NUMBER_OF_DOC_GENERATED = 350000; 
     private static final int SIZE_OF_TITLE = 5;
     private static final int SIZE_OF_DESCRIPTION = 5;
 
@@ -81,8 +81,6 @@ public class ProjetIndexer implements SearchIndexer {
     public void indexDocuments() throws IOException, InterruptedException, SiteMessageException {
         String strProjetBaseUrl = AppPropertiesService.getProperty(PROPERTY_PROJET_BASE_URL);
         
-        
-        initIndexer();
         int mathnum = Math.min(getNumberOfElementsToProcess()-_lastIdIndexed,IndexationService.getNumberMaxItemsByBulk());
 
         for (int index = 0 ; index < mathnum; index++) {
@@ -98,7 +96,7 @@ public class ProjetIndexer implements SearchIndexer {
                 
             } catch (Exception e) {
                 numberOfItemFailed++;
-                IndexationService.error(this.getName(), e, String.valueOf(projet.getId()));
+                IndexationService.error(this, e, String.valueOf(projet.getId()));
             }
 
             if (doc != null) {
@@ -107,6 +105,7 @@ public class ProjetIndexer implements SearchIndexer {
             }
             
         }
+        setInitializationIndexer();
     }
 
     /**
@@ -118,9 +117,6 @@ public class ProjetIndexer implements SearchIndexer {
 
         ArrayList<Document> listDocuments = new ArrayList<Document>();
 
-        
-        numberOfItemProcessed = 0;
-        numberOfItemFailed = 0;
         String strProjetBaseUrl = AppPropertiesService.getProperty(PROPERTY_PROJET_BASE_URL);
 
         List<Projet> _listProjet = getAllProjet();
@@ -136,7 +132,7 @@ public class ProjetIndexer implements SearchIndexer {
                 
             } catch (Exception e) {
                 numberOfItemFailed++;
-                IndexationService.error(this.getName(), e, String.valueOf(projet.getId()));
+                IndexationService.error(this, e, String.valueOf(projet.getId()));
             }
             
             if (doc != null)
@@ -144,7 +140,7 @@ public class ProjetIndexer implements SearchIndexer {
                 listDocuments.add(doc);
             }
         }
-
+        setInitializationIndexer();
         return listDocuments;
     }
 
@@ -364,7 +360,7 @@ public class ProjetIndexer implements SearchIndexer {
     @Override
     public void initIndexer()
     {
-        if (_initialization == false )
+        if (!_initialization)
         {
             _listProjet = getAllProjet();
             _lastIdIndexed = 0;

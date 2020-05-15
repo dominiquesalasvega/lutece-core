@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2017, Mairie de Paris
+ * Copyright (c) 2002-2019, Mairie de Paris
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,6 +35,7 @@ package fr.paris.lutece.portal.web.search;
 
 import fr.paris.lutece.portal.business.search.IndexationMode;
 import fr.paris.lutece.portal.service.admin.AccessDeniedException;
+import fr.paris.lutece.portal.service.i18n.I18nService;
 import fr.paris.lutece.portal.service.search.IndexationService;
 import fr.paris.lutece.portal.business.search.AllIndexationInformations;
 import fr.paris.lutece.portal.service.search.SearchIndexer;
@@ -44,16 +45,15 @@ import fr.paris.lutece.portal.web.admin.AdminFeaturesPageJspBean;
 import fr.paris.lutece.util.html.HtmlTemplate;
 
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
+
 import javax.servlet.http.HttpServletRequest;
 
-
 /**
- * This class provides the user interface to manage the launching of the
- * indexing of the site pages
+ * This class provides the user interface to manage the launching of the indexing of the site pages
  */
-public class SearchIndexationJspBean extends AdminFeaturesPageJspBean {
+public class SearchIndexationJspBean extends AdminFeaturesPageJspBean
+{
     // //////////////////////////////////////////////////////////////////////////
     // Constantes
     /**
@@ -66,57 +66,61 @@ public class SearchIndexationJspBean extends AdminFeaturesPageJspBean {
     private static final String MARK_LOGS = "logs";
     private static final String MARK_INDEXERS_LIST = "indexers_list";
     private static final String INDEXATION_MODE = "indexation_mode";
-
+    private static final String INDEXER_NAME = "indexer_name";
+    private static final String INDEXATION_MESSAGE_ISINDEXING = "portal.search.search_indexation.currentIndexation";
+    private static final String INDEXATION_MESSAGE_MODE = "portal.search.search_indexation.indexationMode";
 
     /**
      * Displays the indexing parameters
      *
-     * @param request the http request
+     * @param request
+     *            the http request
      * @return the html code which displays the parameters page
      */
-    public String getIndexingProperties(HttpServletRequest request) {
-        HashMap<String, Object> model = new HashMap<String, Object>();
-        Collection<SearchIndexer> listIndexers = IndexationService.getIndexers();
-        model.put(MARK_INDEXERS_LIST, listIndexers);
-        model.put(SecurityTokenService.MARK_TOKEN,
-                SecurityTokenService.getInstance().getToken(request, TEMPLATE_MANAGE_INDEXER));
+    public String getIndexingProperties( HttpServletRequest request )
+    {
+        HashMap<String, Object> model = new HashMap<String, Object>( );
+        Collection<SearchIndexer> listIndexers = IndexationService.getIndexers( );
+        model.put( MARK_INDEXERS_LIST, listIndexers );
+        model.put( SecurityTokenService.MARK_TOKEN, SecurityTokenService.getInstance( ).getToken( request, TEMPLATE_MANAGE_INDEXER ) );
 
-        HtmlTemplate template = AppTemplateService.getTemplate(TEMPLATE_MANAGE_INDEXER, getLocale(), model);
+        HtmlTemplate template = AppTemplateService.getTemplate( TEMPLATE_MANAGE_INDEXER, getLocale( ), model );
 
-        return getAdminPage(template.getHtml());
+        return getAdminPage( template.getHtml( ) );
     }
 
     /**
      * Calls the indexing process
      *
-     * @param request the http request
+     * @param request
+     *            the http request
      * @return the result of the indexing process
-     * @throws AccessDeniedException if the security token is invalid
+     * @throws AccessDeniedException
+     *             if the security token is invalid
      */
-    public String doIndexing(HttpServletRequest request) throws AccessDeniedException {
-
-        
-        /*if (!SecurityTokenService.getInstance().validate(request, TEMPLATE_MANAGE_INDEXER)) 
+    public String doIndexing( HttpServletRequest request ) throws AccessDeniedException
+    {
+        /*if ( !SecurityTokenService.getInstance( ).validate( request, TEMPLATE_MANAGE_INDEXER ) )
         {
-            throw new AccessDeniedException("Invalid security token");
+            throw new AccessDeniedException( "Invalid security token" );
         }*/
         String strLogs;
         HashMap<String, Object> model = new HashMap<String, Object>();
         if (IndexationService.getIsIndexing() == false)
         {
             IndexationService.setIsIndexing(true);
-            String[] modeIndex = request.getParameter(INDEXATION_MODE).split(",");
-            String strModeIndex = modeIndex[0];
-            String strIndexerTreated = modeIndex[1];
+            String strModeIndex = request.getParameter(INDEXATION_MODE);
+            String strIndexerTreated = request.getParameter(INDEXER_NAME);
             IndexationMode modeIndexation = IndexationMode.getIndexationMode(strModeIndex);
             if (modeIndexation != null) {
                 strLogs = IndexationService.processIndexing(modeIndexation,strIndexerTreated);
             } else {
-                strLogs = "Unknown Mode set by users\nIndexation FAILED\n";
+                strLogs = I18nService.getLocalizedString( INDEXATION_MESSAGE_MODE, request.getLocale() );
             }
         }
-        else{
-            strLogs = ""+IndexationService.getIsIndexing()+"";
+        else
+        {
+            strLogs = I18nService.getLocalizedString( INDEXATION_MESSAGE_ISINDEXING, request.getLocale() );
         }
         model.put(MARK_LOGS, strLogs);
 
@@ -125,7 +129,6 @@ public class SearchIndexationJspBean extends AdminFeaturesPageJspBean {
         return getAdminPage(template.getHtml());
     }
 
-    
     /**
      * Get Indexation logs
      * @param request
@@ -137,8 +140,16 @@ public class SearchIndexationJspBean extends AdminFeaturesPageJspBean {
         return IndexationService.getJsonString(allIndexationInformations);
 
     }
+
+
+    /**
+     * STOP Indexation
+     * @param request
+     * @return String
+     */
+    public String stopIndexation(HttpServletRequest request) {
+
+        IndexationService.setStop(true);
+        return "Indexation Stopped";
+    }
 }
-
-
-
-

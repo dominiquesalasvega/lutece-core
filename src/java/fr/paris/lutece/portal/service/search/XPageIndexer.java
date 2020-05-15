@@ -65,7 +65,7 @@ public class XPageIndexer implements SearchIndexer {
     private static final String INDEXER_DESCRIPTION = "XPage Indexer Service";
     private static final String INDEXER_VERSION = "2.8.1";
     private static String INDEXER_PATH_INDEX;
-    private static final int NUMBER_OF_DOC_GENERATED = 72000; 
+    private static final int NUMBER_OF_DOC_GENERATED = 720000; 
     private static final int SIZE_OF_TITLE = 2;
     private static final int SIZE_OF_DESCRIPTION = 5;
     
@@ -83,8 +83,6 @@ public class XPageIndexer implements SearchIndexer {
     public void indexDocuments() throws IOException, InterruptedException, SiteMessageException {
         String strProjetBaseUrl = AppPropertiesService.getProperty(PROPERTY_PROJET_BASE_URL);
         
-        
-        initIndexer();
         int mathnum = Math.min(getNumberOfElementsToProcess()-_lastIdIndexed,IndexationService.getNumberMaxItemsByBulk());
 
         for (int index = 0 ; index < mathnum; index++) {
@@ -99,16 +97,16 @@ public class XPageIndexer implements SearchIndexer {
                 
             } catch (Exception e) {
                 numberOfItemFailed++;
-                IndexationService.error(this.getName(), e, String.valueOf(projet.getId()));
+                IndexationService.error(this, e, String.valueOf(projet.getId()));
             }
             
             if (doc != null) {
-                //Thread.sleep(100);
                 IndexationService.write(doc);
                 numberOfItemProcessed++;
             }
             
         }
+        setInitializationIndexer();
     }
 
     /**
@@ -120,9 +118,6 @@ public class XPageIndexer implements SearchIndexer {
 
         ArrayList<Document> listDocuments = new ArrayList<Document>();
 
-        
-        numberOfItemProcessed = 0;
-        numberOfItemFailed = 0;
         String strProjetBaseUrl = AppPropertiesService.getProperty(PROPERTY_PROJET_BASE_URL);
 
         List<Projet> _listProjet = getAllProjet();
@@ -138,14 +133,14 @@ public class XPageIndexer implements SearchIndexer {
                 
             } catch (Exception e) {
                 numberOfItemFailed++;
-                IndexationService.error(this.getName(), e, String.valueOf(projet.getId()));
+                IndexationService.error(this, e, String.valueOf(projet.getId()));
             }
             if (doc != null)
             {
                 listDocuments.add(doc);
             }
         }
-
+        setInitializationIndexer();
         return listDocuments;
     }
 
